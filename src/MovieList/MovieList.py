@@ -64,11 +64,33 @@ class MovieList:
     # TODO: other action(s) go here
 
 
-    def on_window_destroy(self, widget):
+    # TODO: File menu actions
+
+    def on_fileQuitImageMenuItem_activate(self, widget):
         """
-        Handler for closing window. A quick clean kill of the entire app.
+        Handler for quitting the app from the file menu.
+
+        This implementation just passes on responsibility to on_window_destroy().
         """
 
+        self.on_window_destroy(widget)
+
+
+    # TODO: Edit menu actions
+
+
+    # TODO: Help menu actions
+
+
+    def on_window_destroy(self, widget):
+        """
+        Handler for closing window.
+
+        A quick clean kill of the entire app.
+        """
+
+        # TODO: need to save any changes first.
+        print('Destroying main window')
         Gtk.main_quit()
 
 
