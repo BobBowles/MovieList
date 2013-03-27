@@ -54,7 +54,9 @@ class MovieList:
         self.builder.add_from_file(UI_BUILD_FILE)
         self.builder.connect_signals(self)
 
-        # TODO: other setup stuff goes here
+        # references to the widgets we need to manipulate
+        self.movieListStore = self.builder.get_object('movieListStore')
+        self.movieTreeView = self.builder.get_object('movieTreeView')
 
         # get a reference to the main window itself and display the window
         self.window = self.builder.get_object('window')
@@ -81,6 +83,8 @@ class MovieList:
 
     # TODO: Help menu actions
 
+
+    # main window event(s)
 
     def on_window_destroy(self, widget):
         """
