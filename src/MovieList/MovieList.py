@@ -36,7 +36,18 @@ Created on: 24 Mar 2013
 
 from gi.repository import Gtk, Gdk
 from constants import UI_BUILD_FILE, UI_CSS_FILE
+from Movie import Movie
 
+
+# test data
+testMovie = Movie(title='This Is A Test Movie',
+                  date=2000,
+                  director='Bob Bowles',
+                  duration=100,
+                  stars='Zhang Dehua; Bob Bowles; Mum',
+                  genre='Domestic Drama',
+                  media='avi',)
+print(testMovie)
 
 
 class MovieList:
@@ -59,16 +70,7 @@ class MovieList:
         self.movieTreeView = self.builder.get_object('movieTreeView')
 
         # TODO: this is a test data display
-        # this is supposed to be the way to do it
-        self.movieListStore.append([
-                                    'This Is A Test Movie',
-                                    2000,
-                                    'Bob Bowles',
-                                    100,
-                                    'Zhang Dehua; Bob Bowles; Mum',
-                                    'Domestic Drama',
-                                    'avi',
-                                    ])
+        self.movieListStore.append(testMovie.toList())
 
         # get a reference to the main window itself and display the window
         self.window = self.builder.get_object('window')

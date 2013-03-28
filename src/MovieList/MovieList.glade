@@ -11,7 +11,7 @@
       <column type="gchararray"/>
       <!-- column-name Duration -->
       <column type="gint"/>
-      <!-- column-name Starring -->
+      <!-- column-name Stars -->
       <column type="gchararray"/>
       <!-- column-name Genre -->
       <column type="gchararray"/>
@@ -381,7 +381,7 @@
             </child>
             <child>
               <object class="GtkTreeViewColumn" id="starringColumn">
-                <property name="title" translatable="yes">Starring</property>
+                <property name="title" translatable="yes">Stars</property>
                 <child>
                   <object class="GtkCellRendererText" id="starringRenderer"/>
                   <attributes>
