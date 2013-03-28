@@ -58,6 +58,18 @@ class MovieList:
         self.movieListStore = self.builder.get_object('movieListStore')
         self.movieTreeView = self.builder.get_object('movieTreeView')
 
+        # TODO: this is a test data display
+        # this is supposed to be the way to do it
+        self.movieListStore.append([
+                                    'This Is A Test Movie',
+                                    2000,
+                                    'Bob Bowles',
+                                    100,
+                                    'Zhang Dehua; Bob Bowles; Mum',
+                                    'Domestic Drama',
+                                    'avi',
+                                    ])
+
         # get a reference to the main window itself and display the window
         self.window = self.builder.get_object('window')
         self.window.show_all()

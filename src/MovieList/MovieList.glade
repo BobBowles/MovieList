@@ -4,19 +4,19 @@
   <object class="GtkListStore" id="movieListStore">
     <columns>
       <!-- column-name Title -->
-      <column type="gchar"/>
+      <column type="gchararray"/>
       <!-- column-name Date -->
       <column type="gint"/>
       <!-- column-name Director -->
-      <column type="gchar"/>
+      <column type="gchararray"/>
       <!-- column-name Duration -->
       <column type="gint"/>
       <!-- column-name Starring -->
-      <column type="gchar"/>
+      <column type="gchararray"/>
       <!-- column-name Genre -->
-      <column type="gchar"/>
+      <column type="gchararray"/>
       <!-- column-name Media -->
-      <column type="gchar"/>
+      <column type="gchararray"/>
     </columns>
   </object>
   <object class="GtkWindow" id="window">
@@ -334,18 +334,36 @@
             <child>
               <object class="GtkTreeViewColumn" id="titleColumn">
                 <property name="title" translatable="yes">Title</property>
+                <child>
+                  <object class="GtkCellRendererText" id="titleRenderer"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
+                </child>
               </object>
             </child>
             <child>
               <object class="GtkTreeViewColumn" id="dateColumn">
                 <property name="sizing">autosize</property>
                 <property name="title" translatable="yes">Date</property>
+                <child>
+                  <object class="GtkCellRendererText" id="dateRenderer"/>
+                  <attributes>
+                    <attribute name="text">1</attribute>
+                  </attributes>
+                </child>
               </object>
             </child>
             <child>
               <object class="GtkTreeViewColumn" id="directorColumn">
                 <property name="fixed_width">13</property>
                 <property name="title" translatable="yes">Director</property>
+                <child>
+                  <object class="GtkCellRendererText" id="directorRenderer"/>
+                  <attributes>
+                    <attribute name="text">2</attribute>
+                  </attributes>
+                </child>
               </object>
             </child>
             <child>
@@ -353,21 +371,45 @@
                 <property name="sizing">fixed</property>
                 <property name="fixed_width">66</property>
                 <property name="title" translatable="yes">Duration</property>
+                <child>
+                  <object class="GtkCellRendererText" id="durationRenderer"/>
+                  <attributes>
+                    <attribute name="text">3</attribute>
+                  </attributes>
+                </child>
               </object>
             </child>
             <child>
               <object class="GtkTreeViewColumn" id="starringColumn">
                 <property name="title" translatable="yes">Starring</property>
+                <child>
+                  <object class="GtkCellRendererText" id="starringRenderer"/>
+                  <attributes>
+                    <attribute name="text">4</attribute>
+                  </attributes>
+                </child>
               </object>
             </child>
             <child>
               <object class="GtkTreeViewColumn" id="genreColumn">
                 <property name="title" translatable="yes">Genre</property>
+                <child>
+                  <object class="GtkCellRendererText" id="genreRenderer"/>
+                  <attributes>
+                    <attribute name="text">5</attribute>
+                  </attributes>
+                </child>
               </object>
             </child>
             <child>
               <object class="GtkTreeViewColumn" id="mediaColumn">
                 <property name="title" translatable="yes">Media</property>
+                <child>
+                  <object class="GtkCellRendererText" id="mediaRenderer"/>
+                  <attributes>
+                    <attribute name="text">6</attribute>
+                  </attributes>
+                </child>
               </object>
             </child>
           </object>
