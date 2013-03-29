@@ -19,6 +19,13 @@ Created on: 28 Mar 2013
 @author: Bob Bowles <bobjohnbowles@gmail.com>
 """
 
+
+# constants to define sensible default values
+DEFAULT_DATE = 2000
+DEFAULT_DURATION = 60
+DEFAULT_TEXT = ''
+
+
 class Movie(object):
     """
     A data wrapper for managing movie data.
@@ -26,13 +33,13 @@ class Movie(object):
 
 
     def __init__(self,
-                 title=None,
-                 date=2000,
-                 director=None,
-                 duration=90,
-                 stars=None,
-                 genre=None,
-                 media=None):
+                 title='',
+                 date=DEFAULT_DATE,
+                 director=DEFAULT_TEXT,
+                 duration=DEFAULT_DURATION,
+                 stars=DEFAULT_TEXT,
+                 genre=DEFAULT_TEXT,
+                 media=DEFAULT_TEXT):
         """
         Initialize a movie's data attributes.
         """
@@ -61,6 +68,22 @@ class Movie(object):
                 ]
 
 
+    @staticmethod
+    def fromList(listObject):
+        """
+        Convert a list-like object into a Movie.
+        """
+
+        return Movie(title=listObject[0],
+                     date=listObject[1],
+                     director=listObject[2],
+                     duration=listObject[3],
+                     stars=listObject[4],
+                     genre=listObject[5],
+                     media=listObject[6],
+                     )
+
+
     def __repr__(self):
 
         return ("Movie(title='{0.title}', "
@@ -71,3 +94,17 @@ class Movie(object):
                 "genre='{0.genre}', "
                 "media='{0.media}')"
                 ).format(self)
+
+
+    def __eq__(self, other):
+
+        return self.__dict__ == other.__dict__
+
+
+
+
+
+if __name__ == '__main__':
+
+    import doctest
+    doctest.testmod()

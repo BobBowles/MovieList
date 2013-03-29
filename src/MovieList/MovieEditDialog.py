@@ -22,6 +22,7 @@ Created on: 28 Mar 2013
 from gi.repository import Gtk, Gdk
 from constants import DIALOG_BUILD_FILE
 from Movie import Movie
+import datetime
 
 
 # test data
@@ -33,13 +34,11 @@ testMovie = Movie(title='This Is A Test Movie',
                   genre='Domestic Drama',
                   media='avi',
                   )
-print(testMovie)
-defaultMovie = Movie(title='', date=2000, director='', duration=60,
+defaultMovie = Movie(title='TEST', date=2000, director='', duration=60,
                      stars='; delimited list',
                      genre='; delimited list',
                      media='; delimited list',
                      )
-print(defaultMovie)
 
 
 
@@ -59,7 +58,6 @@ class MovieEditDialog(object):
         self.builder.connect_signals(self)
 
         # other ui setup goes here
-        self.movie = movie
 
         # get a reference to the main window itself and display the window
         self.dialog = self.builder.get_object('movieEditDialog')
@@ -73,14 +71,18 @@ class MovieEditDialog(object):
         self.genreEntry = self.builder.get_object('genreEntry')
         self.mediaEntry = self.builder.get_object('mediaEntry')
 
+        # adjust the date spinbutton range for the current year
+        now = datetime.datetime.now()
+        self.dateSpinbutton.set_range(1900, now.year)
+
         # populate the dialog fields
-        self.titleEntry.set_text(self.movie.title)
-        self.dateSpinbutton.set_text(str(self.movie.date))
-        self.directorEntry.set_text(self.movie.director)
-        self.durationSpinbutton.set_text(str(self.movie.duration))
-        self.starsEntry.set_text(self.movie.stars)
-        self.genreEntry.set_text(self.movie.genre)
-        self.mediaEntry.set_text(self.movie.media)
+        self.titleEntry.set_text(movie.title)
+        self.dateSpinbutton.set_value(movie.date)
+        self.directorEntry.set_text(movie.director)
+        self.durationSpinbutton.set_value(movie.duration)
+        self.starsEntry.set_text(movie.stars)
+        self.genreEntry.set_text(movie.genre)
+        self.mediaEntry.set_text(movie.media)
 
 
     def run(self):
@@ -88,27 +90,27 @@ class MovieEditDialog(object):
         Display the edit dialog and return any changes.
         """
 
-        self.dialog.show()
+        # self.dialog.show()
         response = self.dialog.run()
+        movie = None
 
         # if the ok button was pressed update the movie object
         if response == Gtk.ResponseType.OK:
-            self.movie.title = self.titleEntry.get_text()
-            self.movie.date = int(self.dateSpinbutton.get_text())
-            self.movie.director = self.directorEntry.get_text()
-            self.movie.duration = int(self.durationSpinbutton.get_text())
-            self.movie.stars = self.starsEntry.get_text()
-            self.movie.genre = self.genreEntry.get_text()
-            self.movie.media = self.mediaEntry.get_text()
+            movie = Movie(title=self.titleEntry.get_text(),
+                          date=self.dateSpinbutton.get_value_as_int(),
+                          director=self.directorEntry.get_text(),
+                          duration=self.durationSpinbutton.get_value_as_int(),
+                          stars=self.starsEntry.get_text(),
+                          genre=self.genreEntry.get_text(),
+                          media=self.mediaEntry.get_text(),
+                          )
+            print(movie)
+        else:
+            movie = Movie()
 
         self.dialog.destroy()
 
-        return response, self.movie
-
-
-
-    # TODO: other action(s) go here
-
+        return response, movie
 
 
 

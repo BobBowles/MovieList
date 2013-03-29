@@ -37,6 +37,7 @@ Created on: 24 Mar 2013
 from gi.repository import Gtk, Gdk
 from constants import UI_BUILD_FILE, UI_CSS_FILE
 from Movie import Movie
+from MovieEditDialog import MovieEditDialog
 
 
 # test data
@@ -68,6 +69,8 @@ class MovieList:
         # references to the widgets we need to manipulate
         self.movieListStore = self.builder.get_object('movieListStore')
         self.movieTreeView = self.builder.get_object('movieTreeView')
+        self.movieTreeSelection = self.builder.get_object('movieTreeSelection')
+        self.statusbar = self.builder.get_object('statusbar')
 
         # TODO: this is a test data display
         self.movieListStore.append(testMovie.toList())
@@ -93,6 +96,64 @@ class MovieList:
 
 
     # TODO: Edit menu actions
+
+    def on_addMovieButton_clicked(self, widget):
+        """
+        Handler for the toolbar add button.
+
+        Displays a new empty movie in the edit dialog. If the movie information
+        is changed, add the movie information to the list.
+        """
+
+        # an empty movie object to fill in
+        movie = Movie()
+
+        # the statusbar context
+        context = self.statusbar.get_context_id('add')
+
+        # invoke the dialog
+        dialog = MovieEditDialog(movie)
+        response, newMovie = dialog.run()
+
+        # update the model and display
+        if (response == Gtk.ResponseType.OK and newMovie != movie):
+            self.movieListStore.append(newMovie.toList())
+            self.statusbar.push(context, 'Added: {}'.format(newMovie))
+        else:
+            self.statusbar.push(context, 'Add New Movie aborted')
+
+
+    def on_editMovieButton_clicked(self, widget):
+        """
+        Handler for the toolbar edit button.
+
+        Takes the current selected movie and displays it in the edit dialog. If
+        the movie information is changed, update the movie information in the
+        list.
+        """
+
+        # get the current movie selection
+        treeModel, treeIndex = self.movieTreeSelection.get_selected()
+        movie = Movie.fromList(treeModel[treeIndex])
+
+        # context of statusbar messages
+        context = self.statusbar.get_context_id('edit')
+
+        # invoke the dialog
+        dialog = MovieEditDialog(movie)
+        response, editedMovie = dialog.run()
+
+        # update the model and display
+        if (response == Gtk.ResponseType.OK and editedMovie != movie):
+            movieData = editedMovie.toList()
+            for col, data in enumerate(movieData):
+                self.movieListStore.set_value(treeIndex, col, data)
+            self.statusbar.push(context, 'Edited: {}'.format(editedMovie))
+        else:
+            self.statusbar.push(context, 'Edit Movie aborted')
+
+
+
 
 
     # TODO: Help menu actions
