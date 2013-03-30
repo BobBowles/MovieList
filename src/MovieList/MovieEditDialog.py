@@ -48,7 +48,7 @@ class MovieEditDialog(object):
     """
 
 
-    def __init__(self, movie=defaultMovie):
+    def __init__(self, parent=None, movie=defaultMovie):
         """
         Construct and run the dialog
         """
@@ -61,6 +61,7 @@ class MovieEditDialog(object):
 
         # get a reference to the main window itself and display the window
         self.dialog = self.builder.get_object('movieEditDialog')
+        self.dialog.set_transient_for(parent)
 
         # get the dialog editable areas
         self.titleEntry = self.builder.get_object('titleEntry')

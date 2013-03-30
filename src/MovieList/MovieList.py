@@ -112,13 +112,15 @@ class MovieList:
         context = self.statusbar.get_context_id('add')
 
         # invoke the dialog
-        dialog = MovieEditDialog(movie)
+        dialog = MovieEditDialog(parent=self.window, movie=movie)
         response, newMovie = dialog.run()
 
         # update the model and display
         if (response == Gtk.ResponseType.OK and newMovie != movie):
             self.movieListStore.append(newMovie.toList())
-            self.statusbar.push(context, 'Added: {}'.format(newMovie))
+            self.statusbar.push(context,
+                                'Added: {} ({})'.format(newMovie.title,
+                                                        newMovie.date))
         else:
             self.statusbar.push(context, 'Add New Movie aborted')
 
@@ -140,7 +142,7 @@ class MovieList:
         context = self.statusbar.get_context_id('edit')
 
         # invoke the dialog
-        dialog = MovieEditDialog(movie)
+        dialog = MovieEditDialog(parent=self.window, movie=movie)
         response, editedMovie = dialog.run()
 
         # update the model and display
@@ -148,9 +150,46 @@ class MovieList:
             movieData = editedMovie.toList()
             for col, data in enumerate(movieData):
                 self.movieListStore.set_value(treeIndex, col, data)
-            self.statusbar.push(context, 'Edited: {}'.format(editedMovie))
+            self.statusbar.push(context,
+                                'Edited: {} ({})'.format(editedMovie.title,
+                                                         editedMovie.date))
         else:
             self.statusbar.push(context, 'Edit Movie aborted')
+
+
+    def on_deleteMovieButton_clicked(self, widget):
+        """
+        Handler for the toolbar delete button.
+
+        Delete the currently selected movie. Confirmation is required.
+        """
+
+        # get the current movie selection
+        treeModel, treeIndex = self.movieTreeSelection.get_selected()
+        movie = Movie.fromList(treeModel[treeIndex])
+
+        # context of statusbar messages
+        context = self.statusbar.get_context_id('delete')
+
+        # invoke the confirmation dialog
+        dialog = Gtk.MessageDialog(self.window,
+                                   Gtk.DialogFlags.MODAL,
+                                   Gtk.MessageType.WARNING,
+                                   Gtk.ButtonsType.OK_CANCEL,
+                                   'Confirm delete of movie {} ({})'
+                                   .format(movie.title, movie.date),
+                                   )
+        response = dialog.run()
+
+        # check the response
+        if response == Gtk.ResponseType.OK:
+            self.movieListStore.remove(treeIndex)
+            self.statusbar.push(context,
+                                'Deleted: {} ({})'.format(movie.title,
+                                                          movie.date))
+        else:
+            self.statusbar.push(context, 'Delete Movie aborted')
+        dialog.destroy()
 
 
 

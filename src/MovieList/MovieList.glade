@@ -308,6 +308,7 @@
                 <property name="label" translatable="yes">Delete Movie</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-delete</property>
+                <signal name="clicked" handler="on_deleteMovieButton_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
