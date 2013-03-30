@@ -105,12 +105,10 @@ class MovieEditDialog(object):
                           genre=self.genreEntry.get_text(),
                           media=self.mediaEntry.get_text(),
                           )
-            print(movie)
         else:
             movie = Movie()
 
         self.dialog.destroy()
-
         return response, movie
 
 

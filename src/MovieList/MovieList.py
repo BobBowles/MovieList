@@ -13,26 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 """
 Module: MovieList.MovieList
 Created on: 24 Mar 2013
 @author: Bob Bowles <bobjohnbowles@gmail.com>
 """
-
-# Copyright (C) 2012 Bob Bowles <bobjohnbowles@gmail.com>
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from gi.repository import Gtk, Gdk
 from constants import UI_BUILD_FILE, UI_CSS_FILE
@@ -100,6 +86,20 @@ class MovieList:
     def on_addMovieButton_clicked(self, widget):
         """
         Handler for the toolbar add button.
+        """
+        self.addMovie()
+
+
+    def on_editAddImageMenuItem_activate(self, Widget):
+        """
+        Handler for the edit menu add function.
+        """
+        self.addMovie()
+
+
+    def addMovie(self):
+        """
+        Add a new movie to the list.
 
         Displays a new empty movie in the edit dialog. If the movie information
         is changed, add the movie information to the list.
@@ -128,18 +128,35 @@ class MovieList:
     def on_editMovieButton_clicked(self, widget):
         """
         Handler for the toolbar edit button.
+        """
+        self.editMovie()
+
+
+    def on_editEditImageMenuItem_activate(self, Widget):
+        """
+        Handler for the edit menu edit function.
+        """
+        self.editMovie()
+
+
+    def editMovie(self):
+        """
+        Edit the selected movie.
 
         Takes the current selected movie and displays it in the edit dialog. If
         the movie information is changed, update the movie information in the
         list.
         """
 
-        # get the current movie selection
-        treeModel, treeIndex = self.movieTreeSelection.get_selected()
-        movie = Movie.fromList(treeModel[treeIndex])
-
         # context of statusbar messages
         context = self.statusbar.get_context_id('edit')
+
+        # get the current movie selection
+        treeModel, treeIndex = self.movieTreeSelection.get_selected()
+        if treeModel is None or treeIndex is None:
+            self.displaySelectMovieErrorMessage(context, 'edit')
+            return
+        movie = Movie.fromList(treeModel[treeIndex])
 
         # invoke the dialog
         dialog = MovieEditDialog(parent=self.window, movie=movie)
@@ -160,16 +177,33 @@ class MovieList:
     def on_deleteMovieButton_clicked(self, widget):
         """
         Handler for the toolbar delete button.
-
-        Delete the currently selected movie. Confirmation is required.
         """
+        self.deleteMovie()
 
-        # get the current movie selection
-        treeModel, treeIndex = self.movieTreeSelection.get_selected()
-        movie = Movie.fromList(treeModel[treeIndex])
+
+    def on_editDeleteImageMenuItem_activate(self, Widget):
+        """
+        Handler for the edit menu edit function.
+        """
+        self.deleteMovie()
+
+
+    def deleteMovie(self):
+        """
+        Delete the currently selected movie.
+
+        Confirmation is required.
+        """
 
         # context of statusbar messages
         context = self.statusbar.get_context_id('delete')
+
+        # get the current movie selection
+        treeModel, treeIndex = self.movieTreeSelection.get_selected()
+        if treeModel is None or treeIndex is None:
+            self.displaySelectMovieErrorMessage(context, 'delete')
+            return
+        movie = Movie.fromList(treeModel[treeIndex])
 
         # invoke the confirmation dialog
         dialog = Gtk.MessageDialog(self.window,
@@ -179,6 +213,7 @@ class MovieList:
                                    'Confirm delete of movie {} ({})'
                                    .format(movie.title, movie.date),
                                    )
+        dialog.set_decorated(False)
         response = dialog.run()
 
         # check the response
@@ -191,6 +226,21 @@ class MovieList:
             self.statusbar.push(context, 'Delete Movie aborted')
         dialog.destroy()
 
+
+    def displaySelectMovieErrorMessage(self, context, text):
+        """
+        Error message for edit functions that need a selection.
+        """
+
+        dialog = Gtk.MessageDialog(self.window, Gtk.DialogFlags.MODAL,
+            Gtk.MessageType.ERROR,
+            Gtk.ButtonsType.OK,
+            'Select a Movie to {}'.format(text))
+        dialog.set_decorated(False)
+        dialog.run()
+        dialog.destroy()
+        self.statusbar.push(context, 'Edit: select a movie to {}'.format(text))
+        return
 
 
 
