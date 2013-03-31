@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkAction" id="addAction">
+    <property name="label" translatable="yes">_Add</property>
+    <property name="tooltip" translatable="yes">Add a new movie</property>
+    <property name="stock_id">gtk-add</property>
+    <signal name="activate" handler="on_addAction_activate" swapped="no"/>
+  </object>
+  <object class="GtkAction" id="deleteAction">
+    <property name="label" translatable="yes">_Delete</property>
+    <property name="tooltip" translatable="yes">Delete movie</property>
+    <property name="stock_id">gtk-delete</property>
+    <signal name="activate" handler="on_deleteAction_activate" swapped="no"/>
+  </object>
+  <object class="GtkAction" id="editAction">
+    <property name="label" translatable="yes">_Edit</property>
+    <property name="tooltip" translatable="yes">Edit Movie</property>
+    <property name="stock_id">gtk-edit</property>
+    <signal name="activate" handler="on_editAction_activate" swapped="no"/>
+  </object>
   <object class="GtkListStore" id="movieListStore">
     <columns>
       <!-- column-name Title -->
@@ -18,6 +36,9 @@
       <!-- column-name Media -->
       <column type="gchararray"/>
     </columns>
+  </object>
+  <object class="GtkTreeModelSort" id="movieTreeModelSort">
+    <property name="model">movieListStore</property>
   </object>
   <object class="GtkWindow" id="window">
     <property name="can_focus">False</property>
@@ -116,35 +137,26 @@
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkImageMenuItem" id="editAddImageMenuItem">
-                        <property name="label">gtk-add</property>
-                        <property name="use_action_appearance">False</property>
+                        <property name="related_action">addAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="on_editAddImageMenuItem_activate" swapped="no"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="editEditImageMenuItem">
-                        <property name="label">gtk-edit</property>
-                        <property name="use_action_appearance">False</property>
+                        <property name="related_action">editAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="on_editEditImageMenuItem_activate" swapped="no"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="editDeleteImageMenuItem">
-                        <property name="label">gtk-delete</property>
-                        <property name="use_action_appearance">False</property>
+                        <property name="related_action">deleteAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="on_editDeleteImageMenuItem_activate" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -262,14 +274,12 @@
             </child>
             <child>
               <object class="GtkToolButton" id="addMovieButton">
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">addAction</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">addAction</property>
                 <property name="label" translatable="yes">Add Movie</property>
                 <property name="use_underline">True</property>
-                <property name="stock_id">gtk-add</property>
-                <signal name="clicked" handler="on_addMovieButton_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -278,14 +288,12 @@
             </child>
             <child>
               <object class="GtkToolButton" id="editMovieButton">
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">editAction</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">editAction</property>
                 <property name="label" translatable="yes">Edit Movie</property>
                 <property name="use_underline">True</property>
-                <property name="stock_id">gtk-edit</property>
-                <signal name="clicked" handler="on_editMovieButton_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -294,14 +302,12 @@
             </child>
             <child>
               <object class="GtkToolButton" id="deleteMovieButton">
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">deleteAction</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">deleteAction</property>
                 <property name="label" translatable="yes">Delete Movie</property>
                 <property name="use_underline">True</property>
-                <property name="stock_id">gtk-delete</property>
-                <signal name="clicked" handler="on_deleteMovieButton_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -323,6 +329,7 @@
             <property name="can_focus">True</property>
             <property name="vscroll_policy">natural</property>
             <property name="model">movieListStore</property>
+            <property name="reorderable">True</property>
             <property name="level_indentation">6</property>
             <child internal-child="selection">
               <object class="GtkTreeSelection" id="movieTreeSelection"/>

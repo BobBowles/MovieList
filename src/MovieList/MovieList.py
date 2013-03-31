@@ -27,14 +27,33 @@ from MovieEditDialog import MovieEditDialog
 
 
 # test data
-testMovie = Movie(title='This Is A Test Movie',
-                  date=2000,
-                  director='Bob Bowles',
-                  duration=100,
-                  stars='Zhang Dehua; Bob Bowles; Mum',
-                  genre='Domestic Drama',
-                  media='avi',)
-print(testMovie)
+testMovies = [
+              Movie(title='This Is Test Movie 1',
+                    date=2000,
+                    director='Bob Bowles',
+                    duration=60,
+                    stars='Zhang Dehua; Bob Bowles; Mum',
+                    genre='Fantasy Football',
+                    media='avi',
+                    ),
+              Movie(title='This Is Test Movie 2',
+                    date=2001,
+                    director='Bob Bowles',
+                    duration=90,
+                    stars='Bob Bowles; Mum; Zhang Dehua',
+                    genre='Domestic Drama',
+                    media='dvd',
+                    ),
+              Movie(title='This Is Test Movie 3',
+                    date=2005,
+                    director='Bob Bowles',
+                    duration=120,
+                    stars='Mum; Zhang Dehua; Bob Bowles',
+                    genre='Documentary',
+                    media='stream',
+                    ),
+              ]
+print(testMovies)
 
 
 class MovieList:
@@ -59,7 +78,8 @@ class MovieList:
         self.statusbar = self.builder.get_object('statusbar')
 
         # TODO: this is a test data display
-        self.movieListStore.append(testMovie.toList())
+        for movie in testMovies:
+            self.movieListStore.append(movie.toList())
 
         # get a reference to the main window itself and display the window
         self.window = self.builder.get_object('window')
@@ -83,21 +103,7 @@ class MovieList:
 
     # TODO: Edit menu actions
 
-    def on_addMovieButton_clicked(self, widget):
-        """
-        Handler for the toolbar add button.
-        """
-        self.addMovie()
-
-
-    def on_editAddImageMenuItem_activate(self, Widget):
-        """
-        Handler for the edit menu add function.
-        """
-        self.addMovie()
-
-
-    def addMovie(self):
+    def on_addAction_activate(self, widget):
         """
         Add a new movie to the list.
 
@@ -125,21 +131,7 @@ class MovieList:
             self.statusbar.push(context, 'Add New Movie aborted')
 
 
-    def on_editMovieButton_clicked(self, widget):
-        """
-        Handler for the toolbar edit button.
-        """
-        self.editMovie()
-
-
-    def on_editEditImageMenuItem_activate(self, Widget):
-        """
-        Handler for the edit menu edit function.
-        """
-        self.editMovie()
-
-
-    def editMovie(self):
+    def on_editAction_activate(self, widget):
         """
         Edit the selected movie.
 
@@ -174,21 +166,7 @@ class MovieList:
             self.statusbar.push(context, 'Edit Movie aborted')
 
 
-    def on_deleteMovieButton_clicked(self, widget):
-        """
-        Handler for the toolbar delete button.
-        """
-        self.deleteMovie()
-
-
-    def on_editDeleteImageMenuItem_activate(self, Widget):
-        """
-        Handler for the edit menu edit function.
-        """
-        self.deleteMovie()
-
-
-    def deleteMovie(self):
+    def on_deleteAction_activate(self, widget):
         """
         Delete the currently selected movie.
 
