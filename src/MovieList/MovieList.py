@@ -77,6 +77,12 @@ class MovieList:
         self.movieTreeSelection = self.builder.get_object('movieTreeSelection')
         self.statusbar = self.builder.get_object('statusbar')
 
+        # TODO: connect the popup context menu manually (can't figure out howto for Glade)
+        self.movieTreeViewPopupMenu = self.builder.get_object('movieTreeViewPopupMenu')
+        self.movieTreeView.connect_object('button_press_event',
+                                          self.on_movieTreeView_button_press_event,
+                                          self.movieTreeViewPopupMenu)
+
         # TODO: this is a test data display
         for movie in testMovies:
             self.movieListStore.append(movie.toList())
@@ -87,6 +93,22 @@ class MovieList:
 
 
     # TODO: other action(s) go here
+
+    def on_movieTreeView_button_press_event(self, widget, event):
+        """
+        Handler for mouse clicks on the tree view.
+
+        We use this to display the edit menu in context. We only use right-mouse
+        to invoke the context menu.
+        """
+
+#        print('Hi there! Button press on the tree!')
+#        if event.get_button()[1] == 1:
+#            print('Pressed left-mouse!')
+        if event.get_button()[1] == 3:
+            print('Pressed right-mouse!')
+            widget.popup(None, None, None, None, 3, event.get_time())
+
 
 
     # TODO: File menu actions
@@ -105,7 +127,7 @@ class MovieList:
 
     def on_addAction_activate(self, widget):
         """
-        Add a new movie to the list.
+        Handler for the movie add action. Add a new movie to the list.
 
         Displays a new empty movie in the edit dialog. If the movie information
         is changed, add the movie information to the list.
@@ -133,7 +155,7 @@ class MovieList:
 
     def on_editAction_activate(self, widget):
         """
-        Edit the selected movie.
+        Handler for the movie edit action. Edit the selected movie.
 
         Takes the current selected movie and displays it in the edit dialog. If
         the movie information is changed, update the movie information in the
@@ -168,7 +190,7 @@ class MovieList:
 
     def on_deleteAction_activate(self, widget):
         """
-        Delete the currently selected movie.
+        Handler for the movie delete action. Delete the selected movie.
 
         Confirmation is required.
         """
