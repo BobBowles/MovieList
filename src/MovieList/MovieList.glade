@@ -97,6 +97,7 @@
                         <property name="related_action">fileNewAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -105,6 +106,7 @@
                         <property name="related_action">fileOpenAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -113,6 +115,7 @@
                         <property name="related_action">fileSaveAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -121,6 +124,7 @@
                         <property name="related_action">fileSaveAsAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -136,8 +140,8 @@
                         <property name="related_action">fileQuitAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="on_fileQuitImageMenuItem_activate" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -267,10 +271,10 @@
             </child>
             <child>
               <object class="GtkToolButton" id="saveAsFileButton">
-                <property name="related_action">fileSaveAction</property>
+                <property name="related_action">fileSaveAsAction</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="related_action">fileSaveAction</property>
+                <property name="related_action">fileSaveAsAction</property>
                 <property name="label" translatable="yes">Save As</property>
                 <property name="use_underline">True</property>
               </object>

@@ -12,7 +12,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from overrides.Gtk import Widget
 
 
 """
@@ -77,10 +76,15 @@ class MovieList:
         self.movieTreeView = self.builder.get_object('movieTreeView')
         self.movieTreeSelection = self.builder.get_object('movieTreeSelection')
         self.statusbar = self.builder.get_object('statusbar')
+        self.fileSaveAction = self.builder.get_object('fileSaveAction')
 
         # TODO: this is a test data display
         for movie in testMovies:
             self.movieListStore.append(movie.toList())
+
+        # initialize internal flags for the data status
+        self._file = None
+        self.setDirty(False)
 
         # get a reference to the main window itself and display the window
         self.window = self.builder.get_object('window')
@@ -88,6 +92,18 @@ class MovieList:
 
 
     # TODO: other action(s) go here
+
+    def setDirty(self, dirty):
+        """
+        Set the dirty data flag.
+
+        Ensure the save action can only be activated when the data is dirty.
+        """
+
+        print('Setting dirty={}'.format(dirty))
+        if dirty != self._dirty:
+            self._dirty = dirty
+            self.fileSaveAction.set_sensitive(dirty)
 
 
     # TODO: File menu and toolbar actions
@@ -99,7 +115,7 @@ class MovieList:
         Clear out any existing data, start the tree from an empty data store.
         """
 
-        pass
+        print('New File Hello World!')
 
 
     def on_fileOpenAction_activate(self, widget):
@@ -109,7 +125,7 @@ class MovieList:
         Clear existing data and load new data from a file.
         """
 
-        pass
+        print('Open File Hello World!')
 
 
     def on_fileSaveAction_activate(self, widget):
@@ -120,7 +136,7 @@ class MovieList:
         identified, resort to the 'save as' action.
         """
 
-        pass
+        print('Save File Hello World!')
 
 
     def on_fileSaveAsAction_activate(self, widget):
@@ -131,7 +147,7 @@ class MovieList:
         internally for future reference.
         """
 
-        pass
+        print('Save_As File Hello World!')
 
 
     def on_fileQuitAction_activate(self, widget):
@@ -170,6 +186,7 @@ class MovieList:
             self.statusbar.push(context,
                                 'Added: {} ({})'.format(newMovie.title,
                                                         newMovie.date))
+            self.setDirty(True)
         else:
             self.statusbar.push(context, 'Add New Movie aborted')
 
@@ -205,6 +222,7 @@ class MovieList:
             self.statusbar.push(context,
                                 'Edited: {} ({})'.format(editedMovie.title,
                                                          editedMovie.date))
+            self.setDirty(True)
         else:
             self.statusbar.push(context, 'Edit Movie aborted')
 
@@ -243,6 +261,7 @@ class MovieList:
             self.statusbar.push(context,
                                 'Deleted: {} ({})'.format(movie.title,
                                                           movie.date))
+            self.setDirty(True)
         else:
             self.statusbar.push(context, 'Delete Movie aborted')
         dialog.destroy()
