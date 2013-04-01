@@ -341,6 +341,7 @@
             <child>
               <object class="GtkTreeViewColumn" id="titleColumn">
                 <property name="title" translatable="yes">Title</property>
+                <property name="sort_column_id">0</property>
                 <child>
                   <object class="GtkCellRendererText" id="titleRenderer"/>
                   <attributes>
@@ -353,6 +354,7 @@
               <object class="GtkTreeViewColumn" id="dateColumn">
                 <property name="sizing">autosize</property>
                 <property name="title" translatable="yes">Date</property>
+                <property name="sort_column_id">1</property>
                 <child>
                   <object class="GtkCellRendererText" id="dateRenderer"/>
                   <attributes>
@@ -365,6 +367,7 @@
               <object class="GtkTreeViewColumn" id="directorColumn">
                 <property name="fixed_width">13</property>
                 <property name="title" translatable="yes">Director</property>
+                <property name="sort_column_id">2</property>
                 <child>
                   <object class="GtkCellRendererText" id="directorRenderer"/>
                   <attributes>
@@ -378,6 +381,7 @@
                 <property name="sizing">fixed</property>
                 <property name="fixed_width">66</property>
                 <property name="title" translatable="yes">Duration</property>
+                <property name="sort_column_id">3</property>
                 <child>
                   <object class="GtkCellRendererText" id="durationRenderer"/>
                   <attributes>
@@ -389,6 +393,7 @@
             <child>
               <object class="GtkTreeViewColumn" id="starringColumn">
                 <property name="title" translatable="yes">Stars</property>
+                <property name="sort_column_id">4</property>
                 <child>
                   <object class="GtkCellRendererText" id="starsRenderer"/>
                   <attributes>
@@ -400,6 +405,7 @@
             <child>
               <object class="GtkTreeViewColumn" id="genreColumn">
                 <property name="title" translatable="yes">Genre</property>
+                <property name="sort_column_id">5</property>
                 <child>
                   <object class="GtkCellRendererText" id="genreRenderer"/>
                   <attributes>
@@ -411,6 +417,7 @@
             <child>
               <object class="GtkTreeViewColumn" id="mediaColumn">
                 <property name="title" translatable="yes">Media</property>
+                <property name="sort_column_id">6</property>
                 <child>
                   <object class="GtkCellRendererText" id="mediaRenderer"/>
                   <attributes>
