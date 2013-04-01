@@ -53,7 +53,7 @@ testMovies = [
                     media='stream',
                     ),
               ]
-print(testMovies)
+print('Test movies:\n' + '\n'.join('{}'.format(movie) for movie in testMovies))
 
 
 class MovieList:
