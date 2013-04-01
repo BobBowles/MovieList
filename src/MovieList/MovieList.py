@@ -67,22 +67,15 @@ class MovieList:
         Load the UI elements from the .glade file.
         """
 
-        print('Init started')
         self.builder = Gtk.Builder()
         self.builder.add_from_file(UI_BUILD_FILE)
-        print('Builder finished building')
         self.builder.connect_signals(self)
-        print('Builder finished connections')
 
         # references to the widgets we need to manipulate
         self.movieListStore = self.builder.get_object('movieListStore')
         self.movieTreeView = self.builder.get_object('movieTreeView')
         self.movieTreeSelection = self.builder.get_object('movieTreeSelection')
         self.statusbar = self.builder.get_object('statusbar')
-        print('Object refs completed')
-
-        # TODO: connect the popup context menu manually (can't figure out howto for Glade)
-        # self.movieTreePopupMenu = self.builder.get_object('movieTreePopupMenu')
 
         # TODO: this is a test data display
         for movie in testMovies:
@@ -91,7 +84,6 @@ class MovieList:
         # get a reference to the main window itself and display the window
         self.window = self.builder.get_object('window')
         self.window.show_all()
-        print('Init completed')
 
 
     # TODO: other action(s) go here
@@ -109,7 +101,7 @@ class MovieList:
         self.on_window_destroy(widget)
 
 
-    # TODO: Edit menu actions
+    # Edit menu actions
 
     def on_addAction_activate(self, widget):
         """
