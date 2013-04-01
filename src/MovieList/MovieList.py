@@ -24,6 +24,7 @@ from gi.repository import Gtk, Gdk
 from constants import UI_BUILD_FILE, UI_CSS_FILE
 from Movie import Movie
 from MovieEditDialog import MovieEditDialog
+from MovieListIO import MovieListIO
 
 
 # test data
@@ -64,7 +65,10 @@ class MovieList:
 
     def __init__(self):
         """
-        Load the UI elements from the .glade file.
+        Initialize the MovieList's components.
+
+        Load the UI elements from the .glade file. Add an IO module to handle
+        data files.
         """
 
         self.builder = Gtk.Builder()
@@ -82,8 +86,12 @@ class MovieList:
         for movie in testMovies:
             self.movieListStore.append(movie.toList())
 
+        # add the io module
+        self.movieListIO = MovieListIO(self)
+
         # initialize internal flags for the data status
-        self._file = None
+        self.__filenamename = None
+        self.__dirty = True
         self.setDirty(False)
 
         # get a reference to the main window itself and display the window
@@ -100,10 +108,52 @@ class MovieList:
         Ensure the save action can only be activated when the data is dirty.
         """
 
-        print('Setting dirty={}'.format(dirty))
-        if dirty != self._dirty:
-            self._dirty = dirty
+        if dirty != self.__dirty:
+            self.__dirty = dirty
             self.fileSaveAction.set_sensitive(dirty)
+
+
+    def chooseFile(self, title, fileSelectionMode):
+        """
+        File selection dialog.
+
+        The parameters determine whether the dialog is used for opening or
+        saving the file. The chosen file is saved internally for future
+        reference.
+        Returns whether a satisfactory choice was made.
+        """
+
+        # select the stock button to use according to the selection mode
+        okButtonType = None
+        if fileSelectionMode == Gtk.FileChooserAction.OPEN:
+            okButtonType = Gtk.STOCK_OPEN
+        else:
+            okButtonType = Gtk.STOCK_SAVE
+
+        fileChooserDialog = Gtk.FileChooserDialog(title + '...',
+                                                  self.window,
+                                                  fileSelectionMode,
+                                                  [Gtk.STOCK_CANCEL,
+                                                   Gtk.ResponseType.CANCEL,
+                                                   okButtonType,
+                                                   Gtk.ResponseType.OK])
+        response = fileChooserDialog.run()
+        ok = response == Gtk.ResponseType.OK
+        if ok:
+            self.__filename = fileChooserDialog.get_filename()
+            print('Chosen file {}'.format(self.__filename))
+        fileChooserDialog.destroy()
+        return ok
+
+
+    def getFileName(self):
+        return self.__filename
+
+
+    def save(self, context):
+        self.movieListIO.save()
+        self.statusbar.push(context, 'Saved As: {}'.format(self.__filename))
+        self.setDirty(False)
 
 
     # TODO: File menu and toolbar actions
@@ -115,7 +165,11 @@ class MovieList:
         Clear out any existing data, start the tree from an empty data store.
         """
 
-        print('New File Hello World!')
+        context = self.statusbar.get_context_id('new')
+        self.movieListStore.clear()
+        self.setDirty(False)
+        self.__filename = None
+        self.statusbar.push(context, 'New: empty movie list created')
 
 
     def on_fileOpenAction_activate(self, widget):
@@ -125,7 +179,17 @@ class MovieList:
         Clear existing data and load new data from a file.
         """
 
-        print('Open File Hello World!')
+        context = self.statusbar.get_context_id('open')
+
+        # choose a file
+        if self.chooseFile('Open', Gtk.FileChooserAction.OPEN):
+            self.movieListIO.load()
+            self.statusbar.push(context,
+                                'Opened: {}'.format(self.__filename)
+                                )
+            self.setDirty(False)
+        else:
+            self.statusbar.push(context, 'Open: open aborted')
 
 
     def on_fileSaveAction_activate(self, widget):
@@ -136,18 +200,27 @@ class MovieList:
         identified, resort to the 'save as' action.
         """
 
-        print('Save File Hello World!')
+        context = self.statusbar.get_context_id('save')
+        if not self.__filename:
+            self.on_fileSaveAsAction_activate(widget)
+        else:
+            self.save(context)
 
 
     def on_fileSaveAsAction_activate(self, widget):
         """
         Handler for the file save as action.
 
-        Choose a file to save to, save the data, and save the file name
-        internally for future reference.
+        Choose a file to save to, and save the data.
         """
 
-        print('Save_As File Hello World!')
+        context = self.statusbar.get_context_id('save')
+
+        # choose a file
+        if self.chooseFile('Save', Gtk.FileChooserAction.SAVE):
+            self.save(context)
+        else:
+            self.statusbar.push(context, 'Save As: save aborted')
 
 
     def on_fileQuitAction_activate(self, widget):
