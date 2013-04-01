@@ -67,21 +67,22 @@ class MovieList:
         Load the UI elements from the .glade file.
         """
 
+        print('Init started')
         self.builder = Gtk.Builder()
         self.builder.add_from_file(UI_BUILD_FILE)
+        print('Builder finished building')
         self.builder.connect_signals(self)
+        print('Builder finished connections')
 
         # references to the widgets we need to manipulate
         self.movieListStore = self.builder.get_object('movieListStore')
         self.movieTreeView = self.builder.get_object('movieTreeView')
         self.movieTreeSelection = self.builder.get_object('movieTreeSelection')
         self.statusbar = self.builder.get_object('statusbar')
+        print('Object refs completed')
 
         # TODO: connect the popup context menu manually (can't figure out howto for Glade)
-        self.movieTreeViewPopupMenu = self.builder.get_object('movieTreeViewPopupMenu')
-        self.movieTreeView.connect_object('button_press_event',
-                                          self.on_movieTreeView_button_press_event,
-                                          self.movieTreeViewPopupMenu)
+        # self.movieTreePopupMenu = self.builder.get_object('movieTreePopupMenu')
 
         # TODO: this is a test data display
         for movie in testMovies:
@@ -90,25 +91,10 @@ class MovieList:
         # get a reference to the main window itself and display the window
         self.window = self.builder.get_object('window')
         self.window.show_all()
+        print('Init completed')
 
 
     # TODO: other action(s) go here
-
-    def on_movieTreeView_button_press_event(self, widget, event):
-        """
-        Handler for mouse clicks on the tree view.
-
-        We use this to display the edit menu in context. We only use right-mouse
-        to invoke the context menu.
-        """
-
-#        print('Hi there! Button press on the tree!')
-#        if event.get_button()[1] == 1:
-#            print('Pressed left-mouse!')
-        if event.get_button()[1] == 3:
-            print('Pressed right-mouse!')
-            widget.popup(None, None, None, None, 3, event.get_time())
-
 
 
     # TODO: File menu actions
@@ -243,9 +229,25 @@ class MovieList:
         return
 
 
-
-
     # TODO: Help menu actions
+
+
+    # Context menu actions
+
+
+    def on_movieTreeView_button_press_event(self, widget, event):
+        """
+        Handler for mouse clicks on the tree view.
+
+        We use this to display the edit menu as a context popup. We only use
+        right-mouse to invoke the context menu, other clicks are ignored.
+        (Note: the edit menu is connected in Glade to the movieTreeView
+        button_press_event as data, and then swapped. This results in the menu
+        being passed to this handler as the widget, instead of the treeView.)
+        """
+
+        if event.get_button()[1] == 3:
+            widget.popup(None, None, None, None, 3, event.get_time())
 
 
     # main window event(s)

@@ -40,35 +40,6 @@
   <object class="GtkTreeModelSort" id="movieTreeModelSort">
     <property name="model">movieListStore</property>
   </object>
-  <object class="GtkMenu" id="movieTreeViewPopupMenu">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="tearoff_state">True</property>
-    <child>
-      <object class="GtkMenuItem" id="addMenuItem">
-        <property name="related_action">addAction</property>
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="tooltip_text" translatable="yes">Add a movie</property>
-      </object>
-    </child>
-    <child>
-      <object class="GtkMenuItem" id="editMenItem">
-        <property name="related_action">editAction</property>
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="tooltip_text" translatable="yes">Edit a movie</property>
-      </object>
-    </child>
-    <child>
-      <object class="GtkMenuItem" id="deleteMenuItem">
-        <property name="related_action">deleteAction</property>
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="tooltip_text" translatable="yes">Delete a movie	</property>
-      </object>
-    </child>
-  </object>
   <object class="GtkWindow" id="window">
     <property name="can_focus">False</property>
     <child>
@@ -169,6 +140,7 @@
                         <property name="related_action">addAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -177,6 +149,7 @@
                         <property name="related_action">editAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -185,6 +158,7 @@
                         <property name="related_action">deleteAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -360,6 +334,7 @@
             <property name="model">movieListStore</property>
             <property name="reorderable">True</property>
             <property name="level_indentation">6</property>
+            <signal name="button-press-event" handler="on_movieTreeView_button_press_event" object="editMenu" swapped="yes"/>
             <child internal-child="selection">
               <object class="GtkTreeSelection" id="movieTreeSelection"/>
             </child>
