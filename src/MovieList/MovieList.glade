@@ -19,6 +19,36 @@
     <property name="stock_id">gtk-edit</property>
     <signal name="activate" handler="on_editAction_activate" swapped="no"/>
   </object>
+  <object class="GtkAction" id="fileNewAction">
+    <property name="label" translatable="yes">_New</property>
+    <property name="tooltip" translatable="yes">Start  a new Movie List</property>
+    <property name="stock_id">gtk-new</property>
+    <signal name="activate" handler="on_fileNewAction_activate" swapped="no"/>
+  </object>
+  <object class="GtkAction" id="fileOpenAction">
+    <property name="label" translatable="yes">_Open</property>
+    <property name="tooltip" translatable="yes">Open an existing Movie List file.</property>
+    <property name="stock_id">gtk-open</property>
+    <signal name="activate" handler="on_fileOpenAction_activate" swapped="no"/>
+  </object>
+  <object class="GtkAction" id="fileQuitAction">
+    <property name="label" translatable="yes">_Quit</property>
+    <property name="tooltip" translatable="yes">Exit the application.</property>
+    <property name="stock_id">gtk-quit</property>
+    <signal name="activate" handler="on_fileQuitAction_activate" swapped="no"/>
+  </object>
+  <object class="GtkAction" id="fileSaveAction">
+    <property name="label" translatable="yes">_Save</property>
+    <property name="tooltip" translatable="yes">Save the Movie List to the same file.</property>
+    <property name="stock_id">gtk-save</property>
+    <signal name="activate" handler="on_fileSaveAction_activate" swapped="no"/>
+  </object>
+  <object class="GtkAction" id="fileSaveAsAction">
+    <property name="label" translatable="yes">Save _As</property>
+    <property name="tooltip" translatable="yes">Save Movie List in a new file.</property>
+    <property name="stock_id">gtk-save-as</property>
+    <signal name="activate" handler="on_fileSaveAsAction_activate" swapped="no"/>
+  </object>
   <object class="GtkListStore" id="movieListStore">
     <columns>
       <!-- column-name Title -->
@@ -64,41 +94,33 @@
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkImageMenuItem" id="fileNewImageMenuItem">
-                        <property name="label">gtk-new</property>
-                        <property name="use_action_appearance">False</property>
+                        <property name="related_action">fileNewAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="fileOpenImageMenuItem">
-                        <property name="label">gtk-open</property>
-                        <property name="use_action_appearance">False</property>
+                        <property name="related_action">fileOpenAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="fileSaveImageMenuItem">
-                        <property name="label">gtk-save</property>
-                        <property name="use_action_appearance">False</property>
+                        <property name="related_action">fileSaveAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="fileSaveAsImageMenuItem">
-                        <property name="label">gtk-save-as</property>
-                        <property name="use_action_appearance">False</property>
+                        <property name="related_action">fileSaveAsAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -111,11 +133,9 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="fileQuitImageMenuItem">
-                        <property name="label">gtk-quit</property>
-                        <property name="use_action_appearance">False</property>
+                        <property name="related_action">fileQuitAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_fileQuitImageMenuItem_activate" swapped="no"/>
                       </object>
@@ -205,13 +225,12 @@
             <property name="toolbar_style">icons</property>
             <child>
               <object class="GtkToolButton" id="newFileButton">
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">fileNewAction</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">fileNewAction</property>
                 <property name="label" translatable="yes">New</property>
                 <property name="use_underline">True</property>
-                <property name="stock_id">gtk-new</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -220,13 +239,12 @@
             </child>
             <child>
               <object class="GtkToolButton" id="openFileButton">
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">fileOpenAction</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">fileOpenAction</property>
                 <property name="label" translatable="yes">Open</property>
                 <property name="use_underline">True</property>
-                <property name="stock_id">gtk-open</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -235,13 +253,12 @@
             </child>
             <child>
               <object class="GtkToolButton" id="saveFileButton">
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">fileSaveAction</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">fileSaveAction</property>
                 <property name="label" translatable="yes">Save</property>
                 <property name="use_underline">True</property>
-                <property name="stock_id">gtk-save</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -250,13 +267,12 @@
             </child>
             <child>
               <object class="GtkToolButton" id="saveAsFileButton">
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">fileSaveAction</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">fileSaveAction</property>
                 <property name="label" translatable="yes">Save As</property>
                 <property name="use_underline">True</property>
-                <property name="stock_id">gtk-save-as</property>
               </object>
               <packing>
                 <property name="expand">False</property>

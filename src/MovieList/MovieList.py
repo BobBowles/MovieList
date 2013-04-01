@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from overrides.Gtk import Widget
 
 
 """
@@ -89,11 +90,53 @@ class MovieList:
     # TODO: other action(s) go here
 
 
-    # TODO: File menu actions
+    # TODO: File menu and toolbar actions
 
-    def on_fileQuitImageMenuItem_activate(self, widget):
+    def on_fileNewAction_activate(self, widget):
         """
-        Handler for quitting the app from the file menu.
+        Handler for the file new action.
+
+        Clear out any existing data, start the tree from an empty data store.
+        """
+
+        pass
+
+
+    def on_fileOpenAction_activate(self, widget):
+        """
+        Handler for the file open action.
+
+        Clear existing data and load new data from a file.
+        """
+
+        pass
+
+
+    def on_fileSaveAction_activate(self, widget):
+        """
+        Handler for the file save action.
+
+        Save the current data in the file it came from. If no file can be
+        identified, resort to the 'save as' action.
+        """
+
+        pass
+
+
+    def on_fileSaveAsAction_activate(self, widget):
+        """
+        Handler for the file save as action.
+
+        Choose a file to save to, save the data, and save the file name
+        internally for future reference.
+        """
+
+        pass
+
+
+    def on_fileQuitAction_activate(self, widget):
+        """
+        Handler for the file quit action.
 
         This implementation just passes on responsibility to on_window_destroy().
         """
@@ -101,7 +144,7 @@ class MovieList:
         self.on_window_destroy(widget)
 
 
-    # Edit menu actions
+    # Edit menu, toolbar and context actions
 
     def on_addAction_activate(self, widget):
         """
@@ -224,7 +267,7 @@ class MovieList:
     # TODO: Help menu actions
 
 
-    # Context menu actions
+    # Context menu popup
 
 
     def on_movieTreeView_button_press_event(self, widget, event):
