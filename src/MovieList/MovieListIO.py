@@ -77,3 +77,32 @@ class MovieListIO(object):
             self.movieList.movieListStore.append(movie.toList())
 
 
+    def importCsv(self):
+        """
+        Import CSV data.
+
+        The assumed format for the csv data lines is as follows:
+        title,date,director,duration,genre,stars,other_stuff_can_be_ignored
+        """
+
+        fileHandler = io.open(self.movieList.getFileName(), 'rt')
+
+        # get the data and add it to the list store.
+        self.movieList.movieListStore.clear()
+        while True:
+            data = fileHandler.readline()
+            if not data:
+                break
+            dataList = data[:-1].split(',')
+            movie = Movie(
+                          title=dataList[0],
+                          date=(int(dataList[1]) if dataList[1].isnumeric()
+                                else 1900),
+                          director=dataList[2],
+                          duration=(int(dataList[3]) if dataList[3].isnumeric()
+                                    else 0),
+                          genre=dataList[4],
+                          stars=dataList[5],
+                          )
+            self.movieList.movieListStore.append(movie.toList())
+        fileHandler.close()

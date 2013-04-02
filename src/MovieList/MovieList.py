@@ -90,7 +90,7 @@ class MovieList:
         self.movieListIO = MovieListIO(self)
 
         # initialize internal flags for the data status
-        self.__filenamename = None
+        self.__filename = None
         self.__dirty = True
         self.setDirty(False)
 
@@ -354,6 +354,30 @@ class MovieList:
         dialog.destroy()
         self.statusbar.push(context, 'Edit: select a movie to {}'.format(text))
         return
+
+
+    # TODO: Tools menu actions
+
+    def on_importAction_activate(self, widget):
+        """
+        Handler for the import action.
+
+        Load csv data from a file.
+        """
+
+        context = self.statusbar.get_context_id('import')
+
+        # choose a file
+        if self.chooseFile('Import', Gtk.FileChooserAction.OPEN):
+            self.movieListIO.importCsv()
+            self.statusbar.push(context,
+                                'Imported: {}'.format(self.__filename)
+                                )
+            self.setDirty(True)
+            self.__filename = None
+        else:
+            self.statusbar.push(context, 'Import: import aborted')
+
 
 
     # TODO: Help menu actions
