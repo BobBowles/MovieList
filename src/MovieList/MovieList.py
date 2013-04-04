@@ -82,6 +82,12 @@ class MovieList:
         self.statusbar = self.builder.get_object('statusbar')
         self.fileSaveAction = self.builder.get_object('fileSaveAction')
 
+        # apply tree view cell rendering attributes different from defaults
+        durationRenderer = self.builder.get_object('durationRenderer')
+        durationRenderer.props.xalign = 1.0
+        dateRenderer = self.builder.get_object('dateRenderer')
+        dateRenderer.props.xalign = 1.0
+
         # TODO: this is a test data display
         for movie in testMovies:
             self.movieListStore.append(movie.toList())
