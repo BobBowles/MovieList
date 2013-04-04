@@ -82,11 +82,8 @@ class MovieList:
         self.statusbar = self.builder.get_object('statusbar')
         self.fileSaveAction = self.builder.get_object('fileSaveAction')
 
-        # apply tree view cell rendering attributes different from defaults
-        durationRenderer = self.builder.get_object('durationRenderer')
-        durationRenderer.props.xalign = 1.0
-        dateRenderer = self.builder.get_object('dateRenderer')
-        dateRenderer.props.xalign = 1.0
+        # apply any non-standard column rendering
+        self.customiseRendering()
 
         # TODO: this is a test data display
         for movie in testMovies:
@@ -106,6 +103,49 @@ class MovieList:
 
 
     # TODO: other action(s) go here
+
+    def customiseRendering(self):
+        """
+        Apply custom rendering to the columns of the movieTreeView.
+
+        This is a workaround for not (apparently?) being able to do this in
+        Glade. We don't need to refer to the renderers elsewhere, so local
+        variables are enough for our purposes.
+        """
+
+        # deal with justification of numeric columns.
+        self.setXAlignment('durationRenderer')
+        self.setXAlignment('dateRenderer')
+
+        # set word wrapping on long text items (title, stars, other??)
+        self.setColumnWordWrap('titleRenderer', 'titleColumn')
+        self.setColumnWordWrap('directorRenderer', 'directorColumn')
+        self.setColumnWordWrap('starsRenderer', 'starsColumn')
+        self.setColumnWordWrap('genreRenderer', 'genreColumn')
+
+
+    def setXAlignment(self, rendererName):
+        """
+        Set the renderer to display text right-aligned.
+        """
+
+        renderer = self.builder.get_object(rendererName)
+        renderer.props.xalign = 1.0
+
+
+    def setColumnWordWrap(self, rendererName, columnName):
+        """
+        Set word wrap on the given column.
+
+        The word wrap policy is set in the renderer, using the minimum width of
+        the column.
+        """
+
+        renderer = self.builder.get_object(rendererName)
+        renderer.props.wrap_mode = Gtk.WrapMode.WORD
+        renderer.props.wrap_width = \
+            self.builder.get_object(columnName).get_min_width()
+
 
     def setDirty(self, dirty):
         """
