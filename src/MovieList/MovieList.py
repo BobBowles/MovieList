@@ -20,6 +20,8 @@ Created on: 24 Mar 2013
 @author: Bob Bowles <bobjohnbowles@gmail.com>
 """
 
+import os
+import subprocess
 from gi.repository import Gtk, Gdk
 from constants import UI_BUILD_FILE, UI_CSS_FILE
 from Movie import Movie
@@ -159,7 +161,7 @@ class MovieList:
             self.fileSaveAction.set_sensitive(dirty)
 
 
-    def chooseFile(self, title, fileSelectionMode):
+    def chooseSaveFile(self, title, fileSelectionMode):
         """
         File selection dialog.
 
@@ -228,7 +230,7 @@ class MovieList:
         context = self.statusbar.get_context_id('open')
 
         # choose a file
-        if self.chooseFile('Open', Gtk.FileChooserAction.OPEN):
+        if self.chooseSaveFile('Open', Gtk.FileChooserAction.OPEN):
             self.movieListIO.load()
             self.statusbar.push(context,
                                 'Opened: {}'.format(self.__filename)
@@ -263,7 +265,7 @@ class MovieList:
         context = self.statusbar.get_context_id('save')
 
         # choose a file
-        if self.chooseFile('Save', Gtk.FileChooserAction.SAVE):
+        if self.chooseSaveFile('Save', Gtk.FileChooserAction.SAVE):
             self.save(context)
         else:
             self.statusbar.push(context, 'Save As: save aborted')
@@ -386,23 +388,73 @@ class MovieList:
         dialog.destroy()
 
 
-    def displaySelectMovieErrorMessage(self, context, text):
+    def displaySelectMovieErrorMessage(
+                                       self, context, text, 
+                                       message='Edit: select a movie to {}'):
         """
-        Error message for edit functions that need a selection.
+        Error message for functions that need a treeview selection.
+
+        This started as a helper for edit/delete functions, but now it is also
+        used by the play tool.
         """
 
         dialog = Gtk.MessageDialog(self.window, Gtk.DialogFlags.MODAL,
             Gtk.MessageType.ERROR,
             Gtk.ButtonsType.OK,
-            'Select a Movie to {}'.format(text))
+            message.format(text))
         dialog.set_decorated(False)
         dialog.run()
         dialog.destroy()
-        self.statusbar.push(context, 'Edit: select a movie to {}'.format(text))
+        self.statusbar.push(context, message.format(text))
         return
 
 
     # TODO: Tools menu actions
+    
+    def on_playAction_activate(self, widget):
+        """
+        Handler for the play action.
+        
+        Play the movie using an external application. 
+        """
+        
+        context = self.statusbar.get_context_id('play')
+        
+        # get the current movie selection
+        treeModel, treeIndex = self.movieTreeSelection.get_selected()
+        if treeModel is None or treeIndex is None:
+            self.displaySelectMovieErrorMessage(context, 'play',
+                                                message=
+                                                'Play: choose a movie to {}')
+            return
+        movie = Movie.fromList(treeModel[treeIndex])
+        
+        # ensure media file is not blank
+        filename = movie.media
+        if not filename or not os.path.exists(filename):
+            self.displaySelectMovieErrorMessage(context, 'play',
+                                                message='Play: no media to {}')
+            return
+        
+        # play the media
+        # TODO: VLC  Media Player on *nix is assumed here
+        # this sort-of works but we have to find something better
+        os.system('vlc "{}"'.format(filename))
+
+#        dir, fileid = os.path.split(filename)
+#        args = ['/usr/bin/vlc',
+#                '"{}"'.format(fileid)]
+#        print('Program args are: exe={} args={} cwd={}'.format(args[0],
+#                                                               args[1],
+#                                                               dir))
+
+#        os.chdir(dir)
+#        subprocess.Popen(args)
+#        subprocess.Popen('"{}"'.format(fileid), executable='/usr/bin/vlc')
+#        subprocess.Popen(fileid, executable='/usr/bin/vlc')
+
+        self.statusbar.push(context, 'Play: playing {}'.format(filename))
+    
 
     def on_importAction_activate(self, widget):
         """
@@ -414,7 +466,7 @@ class MovieList:
         context = self.statusbar.get_context_id('import')
 
         # choose a file
-        if self.chooseFile('Import', Gtk.FileChooserAction.OPEN):
+        if self.chooseSaveFile('Import', Gtk.FileChooserAction.OPEN):
             self.movieListIO.importCsv()
             self.statusbar.push(context,
                                 'Imported: {}'.format(self.__filename)
