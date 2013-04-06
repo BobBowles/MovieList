@@ -70,7 +70,7 @@ class MovieEditDialog(object):
         self.durationSpinbutton = self.builder.get_object('durationSpinbutton')
         self.starsEntry = self.builder.get_object('starsEntry')
         self.genreEntry = self.builder.get_object('genreEntry')
-        self.mediaEntry = self.builder.get_object('mediaEntry')
+        self.mediaChooserButton = self.builder.get_object('mediaChooserButton')
 
         # adjust the date spinbutton range for the current year
         now = datetime.datetime.now()
@@ -83,7 +83,7 @@ class MovieEditDialog(object):
         self.durationSpinbutton.set_value(movie.duration)
         self.starsEntry.set_text(movie.stars)
         self.genreEntry.set_text(movie.genre)
-        self.mediaEntry.set_text(movie.media)
+        self.mediaChooserButton.set_filename(movie.media)
 
 
     def run(self):
@@ -103,7 +103,7 @@ class MovieEditDialog(object):
                           duration=self.durationSpinbutton.get_value_as_int(),
                           stars=self.starsEntry.get_text(),
                           genre=self.genreEntry.get_text(),
-                          media=self.mediaEntry.get_text(),
+                          media=self.mediaChooserButton.get_filename(),
                           )
         else:
             movie = Movie()
