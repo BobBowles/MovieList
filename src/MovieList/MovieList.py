@@ -20,8 +20,7 @@ Created on: 24 Mar 2013
 @author: Bob Bowles <bobjohnbowles@gmail.com>
 """
 
-import os
-import subprocess
+import os, subprocess
 from gi.repository import Gtk, Gdk
 from constants import UI_BUILD_FILE, UI_CSS_FILE
 from Movie import Movie
@@ -389,7 +388,7 @@ class MovieList:
 
 
     def displaySelectMovieErrorMessage(
-                                       self, context, text, 
+                                       self, context, text,
                                        message='Edit: select a movie to {}'):
         """
         Error message for functions that need a treeview selection.
@@ -410,16 +409,16 @@ class MovieList:
 
 
     # TODO: Tools menu actions
-    
+
     def on_playAction_activate(self, widget):
         """
         Handler for the play action.
-        
-        Play the movie using an external application. 
+
+        Play the movie using an external application.
         """
-        
+
         context = self.statusbar.get_context_id('play')
-        
+
         # get the current movie selection
         treeModel, treeIndex = self.movieTreeSelection.get_selected()
         if treeModel is None or treeIndex is None:
@@ -428,33 +427,19 @@ class MovieList:
                                                 'Play: choose a movie to {}')
             return
         movie = Movie.fromList(treeModel[treeIndex])
-        
+
         # ensure media file is not blank
         filename = movie.media
         if not filename or not os.path.exists(filename):
             self.displaySelectMovieErrorMessage(context, 'play',
                                                 message='Play: no media to {}')
             return
-        
+
         # play the media
         # TODO: VLC  Media Player on *nix is assumed here
-        # this sort-of works but we have to find something better
-        os.system('vlc "{}"'.format(filename))
-
-#        dir, fileid = os.path.split(filename)
-#        args = ['/usr/bin/vlc',
-#                '"{}"'.format(fileid)]
-#        print('Program args are: exe={} args={} cwd={}'.format(args[0],
-#                                                               args[1],
-#                                                               dir))
-
-#        os.chdir(dir)
-#        subprocess.Popen(args)
-#        subprocess.Popen('"{}"'.format(fileid), executable='/usr/bin/vlc')
-#        subprocess.Popen(fileid, executable='/usr/bin/vlc')
-
+        system = subprocess.call('vlc "{}"'.format(filename), shell=True)
         self.statusbar.push(context, 'Play: playing {}'.format(filename))
-    
+
 
     def on_importAction_activate(self, widget):
         """
