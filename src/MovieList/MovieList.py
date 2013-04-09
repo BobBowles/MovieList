@@ -484,7 +484,6 @@ class MovieList:
         # double-click launches movie application
         if (event.button == Gdk.BUTTON_PRIMARY and
             event.type == Gdk.EventType._2BUTTON_PRESS):
-            print('Left Double-click on treeview')
             self.on_playAction_activate(widget)
 
         # right-click activates the context menu
