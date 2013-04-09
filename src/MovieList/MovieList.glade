@@ -7,25 +7,6 @@
     <property name="stock_id">gtk-add</property>
     <signal name="activate" handler="on_addAction_activate" swapped="no"/>
   </object>
-  <object class="GtkAction" id="fileSaveAsAction">
-    <property name="label" translatable="yes">Save _As</property>
-    <property name="tooltip" translatable="yes">Save Movie List in a new file.</property>
-    <property name="stock_id">gtk-save-as</property>
-    <signal name="activate" handler="on_fileSaveAsAction_activate" swapped="no"/>
-  </object>
-  <object class="GtkAction" id="importAction">
-    <property name="label" translatable="yes">_Import</property>
-    <property name="tooltip" translatable="yes">Import csv data</property>
-    <property name="stock_id">gtk-convert</property>
-    <signal name="activate" handler="on_importAction_activate" swapped="no"/>
-  </object>
-  <object class="GtkAction" id="playAction">
-    <property name="label" translatable="yes">_Play Movie</property>
-    <property name="short_label" translatable="yes">_Play</property>
-    <property name="tooltip" translatable="yes">Play the selected movie</property>
-    <property name="stock_id">gtk-media-play</property>
-    <signal name="activate" handler="on_playAction_activate" swapped="no"/>
-  </object>
   <object class="GtkAction" id="deleteAction">
     <property name="label" translatable="yes">_Delete</property>
     <property name="tooltip" translatable="yes">Delete movie</property>
@@ -62,6 +43,18 @@
     <property name="stock_id">gtk-save</property>
     <signal name="activate" handler="on_fileSaveAction_activate" swapped="no"/>
   </object>
+  <object class="GtkAction" id="fileSaveAsAction">
+    <property name="label" translatable="yes">Save _As</property>
+    <property name="tooltip" translatable="yes">Save Movie List in a new file.</property>
+    <property name="stock_id">gtk-save-as</property>
+    <signal name="activate" handler="on_fileSaveAsAction_activate" swapped="no"/>
+  </object>
+  <object class="GtkAction" id="importAction">
+    <property name="label" translatable="yes">_Import</property>
+    <property name="tooltip" translatable="yes">Import csv data</property>
+    <property name="stock_id">gtk-convert</property>
+    <signal name="activate" handler="on_importAction_activate" swapped="no"/>
+  </object>
   <object class="GtkListStore" id="movieListStore">
     <columns>
       <!-- column-name Title -->
@@ -82,6 +75,13 @@
   </object>
   <object class="GtkTreeModelSort" id="movieTreeModelSort">
     <property name="model">movieListStore</property>
+  </object>
+  <object class="GtkAction" id="playAction">
+    <property name="label" translatable="yes">_Play Movie</property>
+    <property name="short_label" translatable="yes">_Play</property>
+    <property name="tooltip" translatable="yes">Play the selected movie</property>
+    <property name="stock_id">gtk-media-play</property>
+    <signal name="activate" handler="on_playAction_activate" swapped="no"/>
   </object>
   <object class="GtkWindow" id="window">
     <property name="can_focus">False</property>
@@ -167,13 +167,29 @@
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="tooltip_text" translatable="yes">Edit the  movie entries</property>
-                <property name="label" translatable="yes">_Edit</property>
+                <property name="tooltip_text" translatable="yes">Interact with the  movie entries</property>
+                <property name="label" translatable="yes">_Movie</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="editMenu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkImageMenuItem" id="editPlayImageMenuItem">
+                        <property name="related_action">playAction</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="separatormenuitem2">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
                     <child>
                       <object class="GtkImageMenuItem" id="editAddImageMenuItem">
                         <property name="related_action">addAction</property>
@@ -210,21 +226,13 @@
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="tooltip_text" translatable="yes">Tools for manipulating data.	</property>
+                <property name="tooltip_text" translatable="yes">Tools for manipulating data, import/export	</property>
                 <property name="label" translatable="yes">_Tools</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="toolsMenu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkImageMenuItem" id="toolsPlayImageMenuItem">
-                        <property name="related_action">playAction</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_stock">True</property>
-                      </object>
-                    </child>
                     <child>
                       <object class="GtkImageMenuItem" id="toolsImportImageMenuItem">
                         <property name="related_action">importAction</property>

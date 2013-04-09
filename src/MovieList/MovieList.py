@@ -282,6 +282,37 @@ class MovieList:
 
     # Edit menu, toolbar and context actions
 
+    def on_playAction_activate(self, widget):
+        """
+        Handler for the play action.
+
+        Play the movie using an external application.
+        """
+
+        context = self.statusbar.get_context_id('play')
+
+        # get the current movie selection
+        treeModel, treeIndex = self.movieTreeSelection.get_selected()
+        if treeModel is None or treeIndex is None:
+            self.displaySelectMovieErrorMessage(context, 'play',
+                                                message=
+                                                'Play: choose a movie to {}')
+            return
+        movie = Movie.fromList(treeModel[treeIndex])
+
+        # ensure media file is not blank
+        filename = movie.media
+        if not filename or not os.path.exists(filename):
+            self.displaySelectMovieErrorMessage(context, 'play',
+                                                message='Play: no media to {}')
+            return
+
+        # play the media
+        # TODO: VLC  Media Player on *nix is assumed here
+        system = subprocess.call('vlc "{}"'.format(filename), shell=True)
+        self.statusbar.push(context, 'Play: playing {}'.format(filename))
+
+
     def on_addAction_activate(self, widget):
         """
         Handler for the movie add action. Add a new movie to the list.
@@ -410,37 +441,6 @@ class MovieList:
 
     # TODO: Tools menu actions
 
-    def on_playAction_activate(self, widget):
-        """
-        Handler for the play action.
-
-        Play the movie using an external application.
-        """
-
-        context = self.statusbar.get_context_id('play')
-
-        # get the current movie selection
-        treeModel, treeIndex = self.movieTreeSelection.get_selected()
-        if treeModel is None or treeIndex is None:
-            self.displaySelectMovieErrorMessage(context, 'play',
-                                                message=
-                                                'Play: choose a movie to {}')
-            return
-        movie = Movie.fromList(treeModel[treeIndex])
-
-        # ensure media file is not blank
-        filename = movie.media
-        if not filename or not os.path.exists(filename):
-            self.displaySelectMovieErrorMessage(context, 'play',
-                                                message='Play: no media to {}')
-            return
-
-        # play the media
-        # TODO: VLC  Media Player on *nix is assumed here
-        system = subprocess.call('vlc "{}"'.format(filename), shell=True)
-        self.statusbar.push(context, 'Play: playing {}'.format(filename))
-
-
     def on_importAction_activate(self, widget):
         """
         Handler for the import action.
@@ -462,26 +462,36 @@ class MovieList:
             self.statusbar.push(context, 'Import: import aborted')
 
 
-
     # TODO: Help menu actions
 
 
-    # Context menu popup
+    # Context menu actions
 
 
     def on_movieTreeView_button_press_event(self, widget, event):
         """
         Handler for mouse clicks on the tree view.
 
-        We use this to display the edit menu as a context popup. We only use
-        right-mouse to invoke the context menu, other clicks are ignored.
+        Single L-click: change current selection (this is automatic).
+        Double L-click: launch movie.
+        R-click: Display the edit menu as a context popup.
+
         (Note: the edit menu is connected in Glade to the movieTreeView
         button_press_event as data, and then swapped. This results in the menu
         being passed to this handler as the widget, instead of the treeView.)
         """
 
-        if event.get_button()[1] == 3:
-            widget.popup(None, None, None, None, 3, event.get_time())
+        # double-click launches movie application
+        if (event.button == Gdk.BUTTON_PRIMARY and
+            event.type == Gdk.EventType._2BUTTON_PRESS):
+            print('Left Double-click on treeview')
+            self.on_playAction_activate(widget)
+
+        # right-click activates the context menu
+        if event.button == Gdk.BUTTON_SECONDARY:
+            print('Right mouse on treeview')
+            widget.popup(None, None, None, None,
+                         Gdk.BUTTON_SECONDARY, event.get_time())
 
 
     # main window event(s)
