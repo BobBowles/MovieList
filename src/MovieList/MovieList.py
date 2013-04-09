@@ -467,7 +467,6 @@ class MovieList:
 
     # Context menu actions
 
-
     def on_movieTreeView_button_press_event(self, widget, event):
         """
         Handler for mouse clicks on the tree view.
@@ -477,8 +476,8 @@ class MovieList:
         R-click: Display the edit menu as a context popup.
 
         (Note: the edit menu is connected in Glade to the movieTreeView
-        button_press_event as data, and then swapped. This results in the menu
-        being passed to this handler as the widget, instead of the treeView.)
+        button_press_event as data, and swapped. So, the menu is passed to this
+        handler as the widget, instead of the treeView.)
         """
 
         # double-click launches movie application
@@ -488,7 +487,6 @@ class MovieList:
 
         # right-click activates the context menu
         if event.button == Gdk.BUTTON_SECONDARY:
-            print('Right mouse on treeview')
             widget.popup(None, None, None, None,
                          Gdk.BUTTON_SECONDARY, event.get_time())
 
