@@ -27,9 +27,34 @@ from Movie import Movie
 from MovieEditDialog import MovieEditDialog
 from MovieListIO import MovieListIO
 
+# 'constants' for statusbar io
+ADD = 'add'
+EDIT = 'edit'
+DELETE = 'delete'
+PLAY = 'play'
+OK = 0
+ABORT = 1
+WARN = 2
+CONTEXT = {ADD: ['Added: {} ({})', 'Add aborted', ''],
+           EDIT: ['Edited: {} ({})', 'Edit aborted',
+                  'Edit: Select a movie to edit'],
+           DELETE: ['Deleted: {} ({})', 'Delete aborted',
+                    'Delete: Select a movie to delete'],
+           PLAY: ['Played: {}', 'Play aborted',
+                  'Play: no media to play']
+           }
 
 # test data
 testMovies = [
+              Movie(title='A Test',
+                    date=1999,
+                    director='Bob Bowles',
+                    duration=30,
+                    stars='Bob Bowles; Zhang Dehua',
+                    genre='Western',
+                    ),
+              Movie(title='This Is The Test Series',
+                    ),
               Movie(title='This Is Test Movie 1',
                     date=2000,
                     director='Bob Bowles',
@@ -37,6 +62,7 @@ testMovies = [
                     stars='Zhang Dehua; Bob Bowles; Mum',
                     genre='Fantasy Football',
                     media='avi',
+                    series='This Is The Test Series',
                     ),
               Movie(title='This Is Test Movie 2',
                     date=2001,
@@ -45,6 +71,7 @@ testMovies = [
                     stars='Bob Bowles; Mum; Zhang Dehua',
                     genre='Domestic Drama',
                     media='dvd',
+                    series='This Is The Test Series',
                     ),
               Movie(title='This Is Test Movie 3',
                     date=2005,
@@ -53,7 +80,15 @@ testMovies = [
                     stars='Mum; Zhang Dehua; Bob Bowles',
                     genre='Documentary',
                     media='stream',
+                    series='This Is The Test Series',
                     ),
+              Movie(title='Yet Another One Not In The Series',
+                    date=2006,
+                    director='Mum',
+                    duration=10,
+                    stars='Mum, Bob Bowles',
+                    genre='Soap Opera',
+                    )
               ]
 print('Test movies:\n' + '\n'.join('{}'.format(movie) for movie in testMovies))
 
@@ -76,8 +111,10 @@ class MovieList:
         self.builder.add_from_file(UI_BUILD_FILE)
         self.builder.connect_signals(self)
 
-        # references to the widgets we need to manipulate
-        self.movieListStore = self.builder.get_object('movieListStore')
+        # TODO: references to the widgets we need to manipulate
+        # self.movieListStore = self.builder.get_object('movieListStore')
+        self.movieTreeStore = self.builder.get_object('movieTreeStore')
+
         self.movieTreeView = self.builder.get_object('movieTreeView')
         self.movieTreeSelection = self.builder.get_object('movieTreeSelection')
         self.statusbar = self.builder.get_object('statusbar')
@@ -86,12 +123,11 @@ class MovieList:
         # apply any non-standard column rendering
         self.customiseRendering()
 
-        # TODO: this is a test data display
-        for movie in testMovies:
-            self.movieListStore.append(movie.toList())
-
         # add the io module
         self.movieListIO = MovieListIO(self)
+
+        # TODO: use the io module to populate with the test data
+        self.movieListIO.populateMovieTreeStore(testMovies)
 
         # initialize internal flags for the data status
         self.__filename = None
@@ -289,28 +325,19 @@ class MovieList:
         Play the movie using an external application.
         """
 
-        context = self.statusbar.get_context_id('play')
-
-        # get the current movie selection
-        treeModel, treeIndex = self.movieTreeSelection.get_selected()
-        if treeModel is None or treeIndex is None:
-            self.displaySelectMovieErrorMessage(context, 'play',
-                                                message=
-                                                'Play: choose a movie to {}')
-            return
-        movie = Movie.fromList(treeModel[treeIndex])
+        contextId = self.statusbar.get_context_id(PLAY)
+        treeIndex, movie = self.getMovieFromSelection(contextId, PLAY)
 
         # ensure media file is not blank
         filename = movie.media
         if not filename or not os.path.exists(filename):
-            self.displaySelectMovieErrorMessage(context, 'play',
-                                                message='Play: no media to {}')
+            self.displaySelectMovieErrorMessage(contextId, PLAY)
             return
 
         # play the media
         # TODO: VLC  Media Player on *nix is assumed here
         system = subprocess.call('vlc "{}"'.format(filename), shell=True)
-        self.statusbar.push(context, 'Play: playing {}'.format(filename))
+        self.statusbar.push(contextId, CONTEXT[PLAY][OK].format(filename))
 
 
     def on_addAction_activate(self, widget):
@@ -321,19 +348,16 @@ class MovieList:
         is changed, add the movie information to the list.
         """
 
-        # an empty movie object to fill in
-        movie = Movie()
-
         # the statusbar context
         context = self.statusbar.get_context_id('add')
 
-        # invoke the dialog
-        dialog = MovieEditDialog(parent=self.window, movie=movie)
-        response, newMovie = dialog.run()
+        # an empty movie object to fill in
+        movie = Movie()
+        response, newMovie = self.editMovieDialog(movie)
 
         # update the model and display
         if (response == Gtk.ResponseType.OK and newMovie != movie):
-            self.movieListStore.append(newMovie.toList())
+            self.movieListIO.appendMovie(newMovie)
             self.statusbar.push(context,
                                 'Added: {} ({})'.format(newMovie.title,
                                                         newMovie.date))
@@ -352,30 +376,23 @@ class MovieList:
         """
 
         # context of statusbar messages
-        context = self.statusbar.get_context_id('edit')
+        contextId = self.statusbar.get_context_id(EDIT)
 
-        # get the current movie selection
-        treeModel, treeIndex = self.movieTreeSelection.get_selected()
-        if treeModel is None or treeIndex is None:
-            self.displaySelectMovieErrorMessage(context, 'edit')
-            return
-        movie = Movie.fromList(treeModel[treeIndex])
-
-        # invoke the dialog
-        dialog = MovieEditDialog(parent=self.window, movie=movie)
-        response, editedMovie = dialog.run()
+        # do the edit
+        treeIndex, movie = self.getMovieFromSelection(contextId, EDIT)
+        response, editedMovie = self.editMovieDialog(movie)
 
         # update the model and display
         if (response == Gtk.ResponseType.OK and editedMovie != movie):
             movieData = editedMovie.toList()
             for col, data in enumerate(movieData):
-                self.movieListStore.set_value(treeIndex, col, data)
-            self.statusbar.push(context,
-                                'Edited: {} ({})'.format(editedMovie.title,
+                self.movieTreeStore.set_value(treeIndex, col, data)
+            self.statusbar.push(contextId,
+                                CONTEXT[EDIT][OK].format(editedMovie.title,
                                                          editedMovie.date))
             self.setDirty(True)
         else:
-            self.statusbar.push(context, 'Edit Movie aborted')
+            self.statusbar.push(contextId, CONTEXT[EDIT][ABORT])
 
 
     def on_deleteAction_activate(self, widget):
@@ -386,14 +403,10 @@ class MovieList:
         """
 
         # context of statusbar messages
-        context = self.statusbar.get_context_id('delete')
+        contextId = self.statusbar.get_context_id(DELETE)
 
         # get the current movie selection
-        treeModel, treeIndex = self.movieTreeSelection.get_selected()
-        if treeModel is None or treeIndex is None:
-            self.displaySelectMovieErrorMessage(context, 'delete')
-            return
-        movie = Movie.fromList(treeModel[treeIndex])
+        treeIndex, movie = self.getMovieFromSelection(contextId, DELETE)
 
         # invoke the confirmation dialog
         dialog = Gtk.MessageDialog(self.window,
@@ -409,18 +422,29 @@ class MovieList:
         # check the response
         if response == Gtk.ResponseType.OK:
             self.movieListStore.remove(treeIndex)
-            self.statusbar.push(context,
-                                'Deleted: {} ({})'.format(movie.title,
-                                                          movie.date))
+            self.statusbar.push(contextId,
+                                CONTEXT[DELETE][OK].format(movie.title,
+                                                           movie.date))
             self.setDirty(True)
         else:
-            self.statusbar.push(context, 'Delete Movie aborted')
+            self.statusbar.push(contextId, CONTEXT[DELETE][ABORT])
         dialog.destroy()
 
 
-    def displaySelectMovieErrorMessage(
-                                       self, context, text,
-                                       message='Edit: select a movie to {}'):
+    def getMovieFromSelection(self, contextId, context):
+        """
+        Obtain a movie from the currently-selected treeView row.
+        """
+
+        # get the current movie selection
+        treeModel, treeIndex = self.movieTreeSelection.get_selected()
+        if treeModel is None or treeIndex is None:
+            self.displaySelectMovieErrorMessage(contextId, context)
+            return
+        return treeIndex, Movie.fromList(treeModel[treeIndex])
+
+
+    def displaySelectMovieErrorMessage(self, contextId, context):
         """
         Error message for functions that need a treeview selection.
 
@@ -431,12 +455,21 @@ class MovieList:
         dialog = Gtk.MessageDialog(self.window, Gtk.DialogFlags.MODAL,
             Gtk.MessageType.ERROR,
             Gtk.ButtonsType.OK,
-            message.format(text))
+            CONTEXT[context][WARN].format(context))
         dialog.set_decorated(False)
         dialog.run()
         dialog.destroy()
-        self.statusbar.push(context, message.format(text))
+        self.statusbar.push(contextId, CONTEXT[context][WARN].format(context))
         return
+
+
+    def editMovieDialog(self, movie):
+
+        # invoke the dialog
+        dialog = MovieEditDialog(parent=self.window,
+                                 movie=movie,
+                                 movieTreeStore=self.movieTreeStore)
+        return dialog.run()
 
 
     # TODO: Tools menu actions

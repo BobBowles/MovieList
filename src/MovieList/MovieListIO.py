@@ -50,9 +50,10 @@ class MovieListIO(object):
         Save the data to disk.
         """
 
-        # extract the data from the movieListStore
+        # TODO: extract the data from the movieListStore
         outputList = []
-        for row in self.movieList.movieListStore:
+        # for row in self.movieList.movieListStore:
+        for row in self.movieList.movieTreeStore:
             outputList.append(Movie.fromList(row))
 
         # pickle the data
@@ -72,9 +73,43 @@ class MovieListIO(object):
         fileHandler.close()
 
         # load the data into the movieListStore
-        self.movieList.movieListStore.clear()
-        for movie in inputList:
-            self.movieList.movieListStore.append(movie.toList())
+        self.movieList.movieTreeStore.clear()
+        self.populateMovieTreeStore(inputList)
+
+
+    def populateMovieTreeStore(self, movieList):
+        """
+        Utility for populating the treeStore from a stored list of movies.
+        """
+
+        for movie in movieList:
+            self.appendMovie(movie)
+
+
+    def appendMovie(self, movie):
+        """
+        Append a movie to the treeStore.
+
+        Find any parent series, then append the movie.
+        """
+
+        # TODO: this is sooo kludgy - work out the parent iteration
+        movieTreeStore = self.movieList.movieTreeStore
+
+        seriesIter = None
+        try:
+            if movie.series:
+                # find the 'movie' that is the series name
+                movieIter = movieTreeStore.get_iter_first()
+                while movieIter:
+                    if movie.series == movieTreeStore[movieIter][0]:
+                        seriesIter = movieIter
+                        break
+                    movieIter = movieTreeStore.iter_next(movieIter)
+        except AttributeError as a:
+            pass
+
+        self.movieList.movieTreeStore.append(seriesIter, movie.toList())
 
 
     def importCsv(self):
@@ -83,6 +118,8 @@ class MovieListIO(object):
 
         The assumed format for the csv data lines is as follows:
         title,date,director,duration,genre,stars,other_stuff_can_be_ignored
+
+        NOTE: No attempt is made to preserve information about media or series.
         """
 
         fileHandler = io.open(self.movieList.getFileName(), 'rt')

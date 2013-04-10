@@ -24,6 +24,8 @@ from constants import DIALOG_BUILD_FILE
 from Movie import Movie
 import datetime
 
+MIN_YEAR = 1900
+MIN_TIME = 0
 
 # test data
 testMovie = Movie(title='This Is A Test Movie',
@@ -48,7 +50,7 @@ class MovieEditDialog(object):
     """
 
 
-    def __init__(self, parent=None, movie=defaultMovie):
+    def __init__(self, parent=None, movie=defaultMovie, movieTreeStore=None):
         """
         Construct and run the dialog
         """
@@ -56,8 +58,6 @@ class MovieEditDialog(object):
         self.builder = Gtk.Builder()
         self.builder.add_from_file(DIALOG_BUILD_FILE)
         self.builder.connect_signals(self)
-
-        # other ui setup goes here
 
         # get a reference to the main window itself and display the window
         self.dialog = self.builder.get_object('movieEditDialog')
@@ -71,19 +71,37 @@ class MovieEditDialog(object):
         self.starsEntry = self.builder.get_object('starsEntry')
         self.genreEntry = self.builder.get_object('genreEntry')
         self.mediaChooserButton = self.builder.get_object('mediaChooserButton')
+        self.seriesComboBox = self.builder.get_object('seriesComboBox')
 
         # adjust the date spinbutton range for the current year
         now = datetime.datetime.now()
-        self.dateSpinbutton.set_range(1900, now.year)
+        self.dateSpinbutton.set_range(MIN_YEAR, now.year)
+
+        # set up the combobox entries from the tree store
+        for row in movieTreeStore:
+            self.seriesComboBox.append(None, row[0])
 
         # populate the dialog fields
         self.titleEntry.set_text(movie.title)
-        self.dateSpinbutton.set_value(movie.date)
+        self.dateSpinbutton.set_value(int(movie.date) if movie.date
+                                      else MIN_YEAR)
         self.directorEntry.set_text(movie.director)
-        self.durationSpinbutton.set_value(movie.duration)
+        self.durationSpinbutton.set_value(int(movie.duration) if movie.duration
+                                          else MIN_TIME)
         self.starsEntry.set_text(movie.stars)
         self.genreEntry.set_text(movie.genre)
         self.mediaChooserButton.set_filename(movie.media)
+        self.seriesComboBox.set_id_column(0)
+
+        # find the current active series
+        seriesId = None
+        if movie.series:
+            seriesComboModel = self.seriesComboBox.get_model()
+            for index, row in seriesComboModel.enumerate():
+                if row[0] == movie.series:
+                    seriesId = index
+                    break
+        self.seriesComboBox.set_active_id(seriesId)
 
 
     def run(self):
@@ -97,13 +115,23 @@ class MovieEditDialog(object):
 
         # if the ok button was pressed update the movie object
         if response == Gtk.ResponseType.OK:
+
+            # deal with default minimums
+            date = self.dateSpinbutton.get_value_as_int()
+            if date == MIN_YEAR:
+                date = ''
+            duration = self.durationSpinbutton.get_value_as_int()
+            if duration == MIN_TIME:
+                duration = ''
+
             movie = Movie(title=self.titleEntry.get_text(),
-                          date=self.dateSpinbutton.get_value_as_int(),
+                          date=date,
                           director=self.directorEntry.get_text(),
-                          duration=self.durationSpinbutton.get_value_as_int(),
+                          duration=duration,
                           stars=self.starsEntry.get_text(),
                           genre=self.genreEntry.get_text(),
                           media=self.mediaChooserButton.get_filename(),
+                          series=self.seriesComboBox.get_active_text()
                           )
         else:
             movie = Movie()
