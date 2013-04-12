@@ -50,16 +50,36 @@ class MovieListIO(object):
         Save the data to disk.
         """
 
-        # TODO: extract the data from the movieListStore
-        outputList = []
-        # for row in self.movieList.movieListStore:
-        for row in self.movieList.movieTreeStore:
-            outputList.append(Movie.fromList(row))
+        # extract the data from the movieListStore
+        treeIter = self.movieList.movieTreeStore.get_iter_first()
+        outputList = self.extractMovieTree(treeIter)
+#        print('Output List:\n{}'.format('\n'.join('{!s}'.format(movie)
+#                                                  for movie in outputList)))
 
         # pickle the data
         fileHandler = io.open(self.movieList.getFileName(), 'wb')
         pickle.dump(outputList, fileHandler)
         fileHandler.close()
+
+
+    def extractMovieTree(self, treeIter):
+        """
+        Extract the movie data from the movieTreeStore.
+
+        Recursively construct a list of the movies in the rows and child rows
+        of the store.
+        The base treeIter must be movieTreeStore.get_iter_first()
+        """
+
+        list = []
+        while treeIter:
+            list.append(Movie.fromList(self.movieList.movieTreeStore[treeIter]))
+            if self.movieList.movieTreeStore.iter_has_child(treeIter):
+                childIter = \
+                    self.movieList.movieTreeStore.iter_children(treeIter)
+                list.extend(self.extractMovieTree(childIter))
+            treeIter = self.movieList.movieTreeStore.iter_next(treeIter)
+        return list
 
 
     def load(self):
@@ -70,6 +90,8 @@ class MovieListIO(object):
         # load in the data  from the pickle file
         fileHandler = io.open(self.movieList.getFileName(), 'rb')
         inputList = pickle.load(fileHandler)
+#        print('Input List:\n{}'.format('\n'.join('{!s}'.format(movie)
+#                                                 for movie in inputList)))
         fileHandler.close()
 
         # load the data into the movieListStore
@@ -79,7 +101,7 @@ class MovieListIO(object):
 
     def populateMovieTreeStore(self, movieList):
         """
-        Utility for populating the treeStore from a stored list of movies.
+        Populate the treeStore from a list of movies.
         """
 
         for movie in movieList:
