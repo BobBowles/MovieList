@@ -78,8 +78,12 @@ class MovieEditDialog(object):
         self.dateSpinbutton.set_range(MIN_YEAR, now.year)
 
         # set up the combobox entries from the tree store
+        index = 0
         for row in movieTreeStore:
             self.seriesComboBox.append(None, row[0])
+            if row[0] == movie.series:
+                self.seriesComboBox.set_active(index)
+            index += 1
 
         # populate the dialog fields
         self.titleEntry.set_text(movie.title)
@@ -91,17 +95,6 @@ class MovieEditDialog(object):
         self.starsEntry.set_text(movie.stars)
         self.genreEntry.set_text(movie.genre)
         self.mediaChooserButton.set_filename(movie.media)
-        self.seriesComboBox.set_id_column(0)
-
-        # find the current active series
-        seriesId = None
-        if movie.series:
-            seriesComboModel = self.seriesComboBox.get_model()
-            for index, row in seriesComboModel.enumerate():
-                if row[0] == movie.series:
-                    seriesId = index
-                    break
-        self.seriesComboBox.set_active_id(seriesId)
 
 
     def run(self):
@@ -138,6 +131,14 @@ class MovieEditDialog(object):
 
         self.dialog.destroy()
         return response, movie
+
+
+    def on_seriesClearButton_clicked(self, widget):
+        """
+        Reset the series name to None.
+        """
+
+        self.seriesComboBox.set_active(-1)
 
 
 

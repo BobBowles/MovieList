@@ -249,7 +249,7 @@ class MovieList:
         """
 
         context = self.statusbar.get_context_id('new')
-        self.movieListStore.clear()
+        self.movieTreeStore.clear()
         self.setDirty(False)
         self.__filename = None
         self.statusbar.push(context, 'New: empty movie list created')
@@ -349,21 +349,14 @@ class MovieList:
         """
 
         # the statusbar context
-        context = self.statusbar.get_context_id('add')
+        contextId = self.statusbar.get_context_id(ADD)
 
         # an empty movie object to fill in
         movie = Movie()
         response, newMovie = self.editMovieDialog(movie)
 
         # update the model and display
-        if (response == Gtk.ResponseType.OK and newMovie != movie):
-            self.movieListIO.appendMovie(newMovie)
-            self.statusbar.push(context,
-                                'Added: {} ({})'.format(newMovie.title,
-                                                        newMovie.date))
-            self.setDirty(True)
-        else:
-            self.statusbar.push(context, 'Add New Movie aborted')
+        self.updateMovieEntry(contextId, ADD, None, response, movie, newMovie)
 
 
     def on_editAction_activate(self, widget):
@@ -383,16 +376,8 @@ class MovieList:
         response, editedMovie = self.editMovieDialog(movie)
 
         # update the model and display
-        if (response == Gtk.ResponseType.OK and editedMovie != movie):
-            movieData = editedMovie.toList()
-            for col, data in enumerate(movieData):
-                self.movieTreeStore.set_value(treeIndex, col, data)
-            self.statusbar.push(contextId,
-                                CONTEXT[EDIT][OK].format(editedMovie.title,
-                                                         editedMovie.date))
-            self.setDirty(True)
-        else:
-            self.statusbar.push(contextId, CONTEXT[EDIT][ABORT])
+        self.updateMovieEntry(contextId, EDIT, treeIndex, response, movie,
+                              editedMovie)
 
 
     def on_deleteAction_activate(self, widget):
@@ -418,17 +403,11 @@ class MovieList:
                                    )
         dialog.set_decorated(False)
         response = dialog.run()
-
-        # check the response
-        if response == Gtk.ResponseType.OK:
-            self.movieListStore.remove(treeIndex)
-            self.statusbar.push(contextId,
-                                CONTEXT[DELETE][OK].format(movie.title,
-                                                           movie.date))
-            self.setDirty(True)
-        else:
-            self.statusbar.push(contextId, CONTEXT[DELETE][ABORT])
         dialog.destroy()
+
+        # update the display
+        self.updateMovieEntry(contextId, DELETE, treeIndex, response, movie,
+                              None)
 
 
     def getMovieFromSelection(self, contextId, context):
@@ -464,12 +443,36 @@ class MovieList:
 
 
     def editMovieDialog(self, movie):
+        """
+        Invoke the dialog.
+        """
 
-        # invoke the dialog
         dialog = MovieEditDialog(parent=self.window,
                                  movie=movie,
                                  movieTreeStore=self.movieTreeStore)
         return dialog.run()
+
+
+    def updateMovieEntry(self, contextId, context,
+                         treeIndex, response, originalMovie, modifiedMovie):
+        """
+        Update the model and display.
+        """
+
+        if (response == Gtk.ResponseType.OK and
+            (modifiedMovie != originalMovie if modifiedMovie else True)):
+            if context == DELETE or context == EDIT:
+                self.movieTreeStore.remove(treeIndex)
+            if context == ADD or context == EDIT:
+                self.movieListIO.appendMovie(modifiedMovie)
+            title, date = ((modifiedMovie.title, modifiedMovie.date)
+                           if modifiedMovie else
+                           (originalMovie.title, originalMovie.date))
+            self.statusbar.push(contextId,
+                                CONTEXT[context][OK].format(title, date))
+            self.setDirty(True)
+        else:
+            self.statusbar.push(contextId, CONTEXT[context][ABORT])
 
 
     # TODO: Tools menu actions
