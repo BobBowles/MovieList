@@ -40,7 +40,8 @@ class Movie(object):
                  stars=DEFAULT_TEXT,
                  genre=DEFAULT_TEXT,
                  media=DEFAULT_TEXT,
-                 series=None):
+                 series=None,
+                 ):
         """
         Initialize a movie's data attributes.
 

@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from fileinput import filename
 
 """
 Module: MovieList.MovieListIO
@@ -21,7 +22,10 @@ Created on: 1 Apr 2013
 
 import io
 import pickle
+from lxml import etree
 from Movie import Movie
+
+SAVE, LOAD = 0, 1
 
 
 
@@ -42,17 +46,42 @@ class MovieListIO(object):
         data.
         """
 
+        self.ioMethods = {
+                  'pickle': [self.savePickle, self.loadPickle],
+                  'xml': [self.saveXml, self.loadXml]
+                  }
+
         self.movieList = movieList
+
+
+    def getFileExtension(self):
+        """
+        Work out what kind of file we are using.
+        """
+
+        return self.movieList.getFileName().split('.')[-1]
+
 
 
     def save(self):
         """
-        Save the data to disk.
+        Save the data.
+
+        We select the appropriate save method using the filename extension as a
+        key to the io methods dictionary.
+        """
+
+        self.ioMethods[self.getFileExtension()][SAVE]()
+
+
+    def savePickle(self):
+        """
+        Save the data to disk as a pickle.
         """
 
         # extract the data from the movieListStore
         treeIter = self.movieList.movieTreeStore.get_iter_first()
-        outputList = self.extractMovieTree(treeIter)
+        outputList = self.extractMovieTreeAsList(treeIter)
 #        print('Output List:\n{}'.format('\n'.join('{!s}'.format(movie)
 #                                                  for movie in outputList)))
 
@@ -62,9 +91,23 @@ class MovieListIO(object):
         fileHandler.close()
 
 
-    def extractMovieTree(self, treeIter):
+    def saveXml(self):
         """
-        Extract the movie data from the movieTreeStore.
+        Save the data in the form of an xml document.
+
+        Iterate over the gtk treeView to create an lxml etree, then write the
+        tree to a file as an xml document.
+        """
+
+        # TODO: extract the data from the gtk store into an lxml etree
+
+        # TODO: save the tree structure as xml
+        pass
+
+
+    def extractMovieTreeAsList(self, treeIter):
+        """
+        Extract the movie data from the movieTreeStore in the form of a list.
 
         Recursively construct a list of the movies in the rows and child rows
         of the store.
@@ -77,26 +120,112 @@ class MovieListIO(object):
             if self.movieList.movieTreeStore.iter_has_child(treeIter):
                 childIter = \
                     self.movieList.movieTreeStore.iter_children(treeIter)
-                list.extend(self.extractMovieTree(childIter))
+                list.extend(self.extractMovieTreeAsList(childIter))
             treeIter = self.movieList.movieTreeStore.iter_next(treeIter)
         return list
 
 
     def load(self):
         """
-        Load the data from disk.
+        Load the data.
+
+        We select and invoke the appropriate method using the file extension as
+        a key to the io methods dictionary.
         """
 
-        # load in the data  from the pickle file
-        fileHandler = io.open(self.movieList.getFileName(), 'rb')
-        inputList = pickle.load(fileHandler)
-#        print('Input List:\n{}'.format('\n'.join('{!s}'.format(movie)
-#                                                 for movie in inputList)))
-        fileHandler.close()
+        inputList = self\
+        .ioMethods[self.getFileExtension()][LOAD](self.movieList.getFileName())
 
         # load the data into the movieListStore
         self.movieList.movieTreeStore.clear()
         self.populateMovieTreeStore(inputList)
+
+
+    def loadPickle(self, fileName):
+        """
+        Load the data from a pickle file.
+        """
+
+        try:
+            fileHandler = io.open(fileName, 'rb')
+            return pickle.load(fileHandler)
+        finally:
+            fileHandler.close()
+
+
+    def loadXml(self, filename):
+        """
+        Load the data from an xml file.
+
+        Use lxml to parse the data, then decant the structure into the gtk
+        treeStore.
+        """
+
+        # read the xml file into an lxml etree document
+        doc = etree.parse(filename)
+
+        # get the data out of the etree into a list
+        root = doc.getroot()
+        inputList = []
+        for element in root.iterchildren():
+            # print(etree.tostring(element).decode(encoding='utf-8'))
+
+            if element.tag == 'movie':
+                inputList.append(self.getXmlMovie(element, None))
+            elif element.tag == 'series':
+                inputList.extend(self.getXmlSeries(element))
+            else:
+                print('Unknown tag: {}'.format(element.tag))
+        return inputList
+
+
+    def getXmlSeries(self, series):
+        """
+        Obtain the series information and movies in the series.
+        """
+
+        seriesList = []
+        seriesTitle = None
+        for child in series.iterchildren(tag='title'):
+            seriesTitle = child.text
+        seriesList.append(Movie(title=seriesTitle))
+
+        # get the movies in the series
+        for movie in series.iterchildren(tag='movie'):
+            seriesList.append(self.getXmlMovie(movie, seriesTitle))
+
+        return seriesList
+
+
+    def getXmlMovie(self, movieElement, seriesTitle):
+        """
+        Extract xml data as a Movie object.
+        """
+
+        movie = Movie(series=seriesTitle)
+        directorList = []
+        starList = []
+        genreList = []
+
+        for data in movieElement.iterchildren(tag='title'):
+            movie.title = data.text
+        for data in movieElement.iterchildren(tag='date'):
+            movie.date = data.text
+        for data in movieElement.iterchildren(tag='director'):
+            directorList.append(data.text)
+        movie.director = '; '.join(directorList)
+        for data in movieElement.iterchildren(tag='duration'):
+            movie.duration = data.text
+        for data in movieElement.iterchildren(tag='star'):
+            starList.append(data.text)
+        movie.stars = '; '.join(starList)
+        for data in movieElement.iterchildren(tag='genre'):
+            genreList.append(data.text)
+        movie.genre = '; '.join(genreList)
+        for data in movieElement.iterchildren(tag='media'):
+            movie.media = data.text
+
+        return movie
 
 
     def populateMovieTreeStore(self, movieList):
