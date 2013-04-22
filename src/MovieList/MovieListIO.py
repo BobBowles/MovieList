@@ -131,6 +131,7 @@ class MovieListIO(object):
 
         We select and invoke the appropriate method using the file extension as
         a key to the io methods dictionary.
+        The list of movie objects is then inserted into the gtk movieTreeStore.
         """
 
         inputList = self\
@@ -143,7 +144,8 @@ class MovieListIO(object):
 
     def loadPickle(self, fileName):
         """
-        Load the data from a pickle file.
+        Return the data from a pickle file as a list. It is assumed the
+        unpickled objects are Movies.
         """
 
         try:
@@ -157,8 +159,7 @@ class MovieListIO(object):
         """
         Load the data from an xml file.
 
-        Use lxml to parse the data, then decant the structure into the gtk
-        treeStore.
+        Use lxml to parse the data, return it as a list of movie objects.
         """
 
         # read the xml file into an lxml etree document
@@ -168,20 +169,18 @@ class MovieListIO(object):
         root = doc.getroot()
         inputList = []
         for element in root.iterchildren():
-            # print(etree.tostring(element).decode(encoding='utf-8'))
-
             if element.tag == 'movie':
-                inputList.append(self.getXmlMovie(element, None))
+                inputList.append(self.getMovieFromXml(element, None))
             elif element.tag == 'series':
-                inputList.extend(self.getXmlSeries(element))
+                inputList.extend(self.getSeriesFromXml(element))
             else:
                 print('Unknown tag: {}'.format(element.tag))
         return inputList
 
 
-    def getXmlSeries(self, series):
+    def getSeriesFromXml(self, series):
         """
-        Obtain the series information and movies in the series.
+        Obtain a movie series from an xml tree object as a list of movies.
         """
 
         seriesList = []
@@ -192,12 +191,12 @@ class MovieListIO(object):
 
         # get the movies in the series
         for movie in series.iterchildren(tag='movie'):
-            seriesList.append(self.getXmlMovie(movie, seriesTitle))
+            seriesList.append(self.getMovieFromXml(movie, seriesTitle))
 
         return seriesList
 
 
-    def getXmlMovie(self, movieElement, seriesTitle):
+    def getMovieFromXml(self, movieElement, seriesTitle):
         """
         Extract xml data as a Movie object.
         """
@@ -234,10 +233,10 @@ class MovieListIO(object):
         """
 
         for movie in movieList:
-            self.appendMovie(movie)
+            self.appendMovieToStore(movie)
 
 
-    def appendMovie(self, movie):
+    def appendMovieToStore(self, movie):
         """
         Append a movie to the treeStore.
 
