@@ -55,27 +55,7 @@
     <property name="stock_id">gtk-convert</property>
     <signal name="activate" handler="on_importAction_activate" swapped="no"/>
   </object>
-  <object class="GtkListStore" id="movieListStore">
-    <columns>
-      <!-- column-name Title -->
-      <column type="gchararray"/>
-      <!-- column-name Date -->
-      <column type="gint"/>
-      <!-- column-name Director -->
-      <column type="gchararray"/>
-      <!-- column-name Duration -->
-      <column type="gint"/>
-      <!-- column-name Stars -->
-      <column type="gchararray"/>
-      <!-- column-name Genre -->
-      <column type="gchararray"/>
-      <!-- column-name Media -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
-  <object class="GtkTreeModelSort" id="movieListModelSort">
-    <property name="model">movieListStore</property>
-  </object>
+  <object class="GtkTreeModelSort" id="movieListModelSort"/>
   <object class="GtkTreeStore" id="movieTreeStore">
     <columns>
       <!-- column-name Title -->
@@ -91,8 +71,6 @@
       <!-- column-name Genre -->
       <column type="gchararray"/>
       <!-- column-name Media -->
-      <column type="gchararray"/>
-      <!-- column-name Series -->
       <column type="gchararray"/>
     </columns>
   </object>

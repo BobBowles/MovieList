@@ -50,7 +50,8 @@ class MovieEditDialog(object):
     """
 
 
-    def __init__(self, parent=None, movie=defaultMovie, movieTreeStore=None):
+    def __init__(self, parent=None, movie=defaultMovie, seriesName=None,
+                 movieTreeStore=None):
         """
         Construct and run the dialog
         """
@@ -81,7 +82,7 @@ class MovieEditDialog(object):
         index = 0
         for row in movieTreeStore:
             self.seriesComboBox.append(None, row[0])
-            if row[0] == movie.series:
+            if seriesName and row[0] == seriesName:
                 self.seriesComboBox.set_active(index)
             index += 1
 
@@ -94,7 +95,8 @@ class MovieEditDialog(object):
                                           else MIN_TIME)
         self.starsEntry.set_text(movie.stars)
         self.genreEntry.set_text(movie.genre)
-        self.mediaChooserButton.set_filename(movie.media)
+        if movie.media:
+            self.mediaChooserButton.set_filename(movie.media)
 
 
     def run(self):
@@ -105,6 +107,7 @@ class MovieEditDialog(object):
         # self.dialog.show()
         response = self.dialog.run()
         movie = None
+        seriesName = None
 
         # if the ok button was pressed update the movie object
         if response == Gtk.ResponseType.OK:
@@ -124,13 +127,15 @@ class MovieEditDialog(object):
                           stars=self.starsEntry.get_text(),
                           genre=self.genreEntry.get_text(),
                           media=self.mediaChooserButton.get_filename(),
-                          series=self.seriesComboBox.get_active_text()
+                          # series=self.seriesComboBox.get_active_text()
                           )
+            seriesName = self.seriesComboBox.get_active_text()
+
         else:
             movie = Movie()
 
         self.dialog.destroy()
-        return response, movie
+        return response, movie, seriesName
 
 
     def on_seriesClearButton_clicked(self, widget):

@@ -40,7 +40,6 @@ class Movie(object):
                  stars=DEFAULT_TEXT,
                  genre=DEFAULT_TEXT,
                  media=DEFAULT_TEXT,
-                 series=None,
                  ):
         """
         Initialize a movie's data attributes.
@@ -56,7 +55,6 @@ class Movie(object):
         self.stars = stars
         self.genre = genre
         self.media = media
-        self.series = series
 
 
     def toList(self):
@@ -71,34 +69,20 @@ class Movie(object):
         4    stars        the main stars cited (;-delimited list)
         5    genre        the movie's genre (;-delimited list)
         6    media        the location of the movie file on the local system
-        7    series       the name of the series the movie belongs to (or None)
         """
 
         # fix for legacy versions with numeric attributes
         date = '{0:>4s}'.format(str(self.date)) if self.date else ''
         duration = '{0:>3s}'.format(str(self.duration)) if self.duration else ''
 
-        # fix for legacy versions with no series attribute
-        try:
-            return [self.title,
-                    date,
-                    self.director,
-                    duration,
-                    self.stars,
-                    self.genre,
-                    self.media,
-                    self.series,
-                    ]
-        except AttributeError as e:
-            return [self.title,
-                    date,
-                    self.director,
-                    duration,
-                    self.stars,
-                    self.genre,
-                    self.media,
-                    None,
-                    ]
+        return [self.title,
+                date,
+                self.director,
+                duration,
+                self.stars,
+                self.genre,
+                self.media,
+                ]
 
 
     @staticmethod
@@ -117,15 +101,11 @@ class Movie(object):
                      stars=listObject[4],
                      genre=listObject[5],
                      media=listObject[6],
-                     series=listObject[7],
                      )
 
 
     def __repr__(self):
 
-        series = None
-        if self.series:
-            series = "'{}'".format(self.series)
         return ("Movie(title='{0.title}', "
                 "date={0.date}, "
                 "director='{0.director}', "
@@ -133,8 +113,7 @@ class Movie(object):
                 "stars='{0.stars}', "
                 "genre='{0.genre}', "
                 "media='{0.media}', "
-                "series={1})"
-                ).format(self, series)
+                ).format(self)
 
 
     def __eq__(self, other):
@@ -142,6 +121,61 @@ class Movie(object):
         return self.__dict__ == other.__dict__
 
 
+class MovieSeries(Movie):
+    """
+    A subclass of Movie that is intended to act as a container for a movie
+    series.
+
+    Unlike Movie, the only important attributes are the series title, and the
+    list of movies in the series.
+    """
+
+
+    def __init__(self, title=None, series=[]):
+        """
+        Initialize the attributes.
+        """
+
+        self.title = title
+        self.series = series
+
+
+    def toList(self):
+        """
+        Publish the series data as a list.
+
+        The order of parameters in the list is:
+        0    title        the name of the movie
+        1-6  None
+        """
+
+        return [self.title,
+                None, None, None, None, None, None,
+                ]
+
+
+    @staticmethod
+    def fromList(listObject, listOfMovies):
+        """
+        Converts a list-like object (eg., from a movieTreeStore row) and a list
+        of movies into a MovieSeries.
+
+        The series title is the first component in the list. The movies in the
+        list are the movies in the series.
+        """
+
+        return MovieSeries(title=listObject[0], series=listOfMovies)
+
+
+    def __repr__(self):
+
+        series = None
+        if self.series:
+            series = "'{}'".format(self.series)
+        return ("MovieSeries(title='{0.title}', "
+                "series={0.series}, "
+                ")"
+               ).format(self)
 
 
 

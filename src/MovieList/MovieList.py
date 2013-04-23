@@ -23,7 +23,7 @@ Created on: 24 Mar 2013
 import os, subprocess
 from gi.repository import Gtk, Gdk
 from constants import UI_BUILD_FILE, UI_CSS_FILE
-from Movie import Movie
+from Movie import Movie, MovieSeries
 from MovieEditDialog import MovieEditDialog
 from MovieListIO import MovieListIO
 
@@ -53,43 +53,43 @@ testMovies = [
                     stars='Bob Bowles; Zhang Dehua',
                     genre='Western',
                     ),
-              Movie(title='This Is The Test Series',
-                    ),
-              Movie(title='This Is Test Movie 1',
-                    date=2000,
-                    director='Bob Bowles',
-                    duration=60,
-                    stars='Zhang Dehua; Bob Bowles; Mum',
-                    genre='Fantasy Football',
-                    media='avi',
-                    series='This Is The Test Series',
-                    ),
-              Movie(title='This Is Test Movie 2',
-                    date=2001,
-                    director='Bob Bowles',
-                    duration=90,
-                    stars='Bob Bowles; Mum; Zhang Dehua',
-                    genre='Domestic Drama',
-                    media='dvd',
-                    series='This Is The Test Series',
-                    ),
-              Movie(title='This Is Test Movie 3',
-                    date=2005,
-                    director='Bob Bowles',
-                    duration=120,
-                    stars='Mum; Zhang Dehua; Bob Bowles',
-                    genre='Documentary',
-                    media='stream',
-                    series='This Is The Test Series',
-                    ),
+              MovieSeries(title='This Is The Test Series',
+                          series=[
+                                  Movie(title='This Is Test Movie 1',
+                                        date=2000,
+                                        director='Bob Bowles',
+                                        duration=60,
+                                        stars='Zhang Dehua; Bob Bowles; Mum',
+                                        genre='Fantasy Football',
+                                        media='avi',
+                                        ),
+                                  Movie(title='This Is Test Movie 2',
+                                        date=2001,
+                                        director='Bob Bowles',
+                                        duration=90,
+                                        stars='Bob Bowles; Mum; Zhang Dehua',
+                                        genre='Domestic Drama',
+                                        media='dvd',
+                                        ),
+                                  Movie(title='This Is Test Movie 3',
+                                        date=2005,
+                                        director='Bob Bowles',
+                                        duration=120,
+                                        stars='Mum; Zhang Dehua; Bob Bowles',
+                                        genre='Documentary',
+                                        media='stream',
+                                        ),
+                                  ],
+                          ),
               Movie(title='Yet Another One Not In The Series',
                     date=2006,
                     director='Mum',
                     duration=10,
                     stars='Mum, Bob Bowles',
                     genre='Soap Opera',
-                    )
+                    ),
               ]
+
 print('Test movies:\n' + '\n'.join('{}'.format(movie) for movie in testMovies))
 
 
@@ -126,7 +126,7 @@ class MovieList:
         # add the io module
         self.movieListIO = MovieListIO(self)
 
-        # TODO: use the io module to populate with the test data
+        # use the io module to populate with the test data
         self.movieListIO.populateMovieTreeStore(testMovies)
 
         # initialize internal flags for the data status
@@ -353,10 +353,15 @@ class MovieList:
 
         # an empty movie object to fill in
         movie = Movie()
-        response, newMovie = self.editMovieDialog(movie)
+        seriesIndex = seriesName = None
+        response, newMovie, newSeriesName = self.editMovieDialog(movie,
+                                                                 seriesName)
+        newSeriesIndex = self.getSeriesIndexFromName(newSeriesName)
 
         # update the model and display
-        self.updateMovieEntry(contextId, ADD, None, response, movie, newMovie)
+        self.updateMovieEntry(contextId, ADD, None, response,
+                              movie, seriesIndex,
+                              newMovie, newSeriesIndex)
 
 
     def on_editAction_activate(self, widget):
@@ -373,11 +378,42 @@ class MovieList:
 
         # do the edit
         treeIndex, movie = self.getMovieFromSelection(contextId, EDIT)
-        response, editedMovie = self.editMovieDialog(movie)
+        seriesIndex, seriesName = self.findMovieSeries(treeIndex)
+        response, editedMovie, editedSeriesName = \
+            self.editMovieDialog(movie, seriesName)
+
+        editedSeriesIndex = (self.getSeriesIndexFromName(editedSeriesName)
+                             if editedSeriesName != seriesName
+                             else seriesIndex)
 
         # update the model and display
-        self.updateMovieEntry(contextId, EDIT, treeIndex, response, movie,
-                              editedMovie)
+        self.updateMovieEntry(contextId, EDIT, treeIndex, response,
+                              movie, seriesIndex,
+                              editedMovie, editedSeriesIndex)
+
+
+    def findMovieSeries(self, movieIndex):
+        """
+        Get the details of the series a movie belongs to using its tree index.
+        """
+
+        seriesIndex = self.movieTreeStore.iter_parent(movieIndex)
+        seriesTitle = (self.movieTreeStore[seriesIndex][0]
+                       if seriesIndex else None)
+        return seriesIndex, seriesTitle
+
+
+    def getSeriesIndexFromName(self, seriesTitle):
+        """
+        Obtain the treeStore pointer for the series from the name of the series.
+        """
+
+        treeIter = self.movieTreeStore.get_iter_first()
+        while treeIter:
+            if seriesTitle == self.movieTreeStore[treeIter][0]:
+                return treeIter
+            treeIter = self.movieTreeStore.iter_next(treeIter)
+        treeIter = None
 
 
     def on_deleteAction_activate(self, widget):
@@ -406,8 +442,8 @@ class MovieList:
         dialog.destroy()
 
         # update the display
-        self.updateMovieEntry(contextId, DELETE, treeIndex, response, movie,
-                              None)
+        self.updateMovieEntry(contextId, DELETE, treeIndex, response,
+                              movie, None, None, None)
 
 
     def getMovieFromSelection(self, contextId, context):
@@ -442,37 +478,67 @@ class MovieList:
         return
 
 
-    def editMovieDialog(self, movie):
+    def editMovieDialog(self, movie, seriesName):
         """
         Invoke the dialog.
         """
 
         dialog = MovieEditDialog(parent=self.window,
-                                 movie=movie,
+                                 movie=movie, seriesName=seriesName,
                                  movieTreeStore=self.movieTreeStore)
         return dialog.run()
 
 
-    def updateMovieEntry(self, contextId, context,
-                         treeIndex, response, originalMovie, modifiedMovie):
+    def updateMovieEntry(self, contextId, context, treeIndex, response,
+                         originalMovie, originalSeriesIndex,
+                         modifiedMovie, modifiedSeriesIndex):
         """
         Update the model and display.
         """
 
         if (response == Gtk.ResponseType.OK and
-            (modifiedMovie != originalMovie if modifiedMovie else True)):
+            ((modifiedMovie != originalMovie
+              if modifiedMovie else True) or
+             (modifiedSeriesIndex != originalSeriesIndex
+              if modifiedSeriesIndex else True))):
+
+            # to delete or edit we remove the old entry
             if context == DELETE or context == EDIT:
+                # if the 'movie' entry has children re-parent them to the root
+                if self.movieTreeStore.iter_has_child(treeIndex):
+                    self.reParentChildren(treeIndex, modifiedSeriesIndex)
+                # ... then delete the parent
                 self.movieTreeStore.remove(treeIndex)
+
+            # to edit or add we add the modified/added entry
             if context == ADD or context == EDIT:
-                self.movieListIO.appendMovie(modifiedMovie)
+                self.movieListIO.appendMovieToStore(modifiedMovie,
+                                                    modifiedSeriesIndex)
             title, date = ((modifiedMovie.title, modifiedMovie.date)
                            if modifiedMovie else
                            (originalMovie.title, originalMovie.date))
             self.statusbar.push(contextId,
                                 CONTEXT[context][OK].format(title, date))
+
             self.setDirty(True)
+
         else:
             self.statusbar.push(contextId, CONTEXT[context][ABORT])
+
+
+    def reParentChildren(self, seriesIter, newSeriesIter):
+        """
+        Take the children of a series to be deleted and re-parent them to the
+        root, or another named series.
+        """
+
+        childIter = self.movieTreeStore.iter_children(seriesIter)
+        # moviesToAdd = []
+        while childIter:
+            movie = Movie.fromList(self.movieTreeStore[childIter])
+            self.movieTreeStore.remove(childIter)
+            self.movieListIO.appendMovieToStore(movie, newSeriesIter)
+            childIter = self.movieTreeStore.iter_children(seriesIter)
 
 
     # TODO: Tools menu actions

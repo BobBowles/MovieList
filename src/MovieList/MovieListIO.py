@@ -23,7 +23,7 @@ Created on: 1 Apr 2013
 import io
 import pickle
 from lxml import etree
-from Movie import Movie
+from Movie import Movie, MovieSeries
 
 SAVE, LOAD = 0, 1
 
@@ -62,7 +62,6 @@ class MovieListIO(object):
         return self.movieList.getFileName().split('.')[-1]
 
 
-
     def save(self):
         """
         Save the data.
@@ -71,19 +70,16 @@ class MovieListIO(object):
         key to the io methods dictionary.
         """
 
-        self.ioMethods[self.getFileExtension()][SAVE]()
-
-
-    def savePickle(self):
-        """
-        Save the data to disk as a pickle.
-        """
-
         # extract the data from the movieListStore
         treeIter = self.movieList.movieTreeStore.get_iter_first()
         outputList = self.extractMovieTreeAsList(treeIter)
-#        print('Output List:\n{}'.format('\n'.join('{!s}'.format(movie)
-#                                                  for movie in outputList)))
+        self.ioMethods[self.getFileExtension()][SAVE](outputList)
+
+
+    def savePickle(self, outputList):
+        """
+        Save the data to disk as a pickle.
+        """
 
         # pickle the data
         fileHandler = io.open(self.movieList.getFileName(), 'wb')
@@ -91,36 +87,103 @@ class MovieListIO(object):
         fileHandler.close()
 
 
-    def saveXml(self):
+    def saveXml(self, outputList):
         """
         Save the data in the form of an xml document.
 
-        Iterate over the gtk treeView to create an lxml etree, then write the
-        tree to a file as an xml document.
+        Iterate over the gtk treeView to create an lxml etree document, then
+        write the document to the specified file.
         """
 
-        # TODO: extract the data from the gtk store into an lxml etree
+        # extract the data from the list into an etree document
+        root = etree.Element('root')
 
-        # TODO: save the tree structure as xml
-        pass
+        for object in outputList:
+            if isinstance(object, MovieSeries):
+                self.addSeriesToXml(root, object)
+            else:
+                self.addMovieToXml(root, object)
+
+        # save the tree structure in an xml file
+        tree = etree.ElementTree(root)
+        tree.write(self.movieList.getFileName(),
+                   pretty_print=True,
+                   encoding='ISO-8859-1',
+                   xml_declaration=True)
+
+
+    def addMovieToXml(self, node, movie):
+        """
+        Add a movie object to the xml tree at the element node specified.
+        """
+
+        movieNode = etree.SubElement(node, 'movie')
+
+        self.addSingleNodeToXml(movieNode, movie.title, 'title')
+        self.addSingleNodeToXml(movieNode, movie.date, 'date')
+        self.addMultipleNodesToXml(movieNode, movie.director, 'director')
+        self.addSingleNodeToXml(movieNode, movie.duration, 'duration')
+        self.addMultipleNodesToXml(movieNode, movie.stars, 'star')
+        self.addMultipleNodesToXml(movieNode, movie.genre, 'genre')
+        self.addSingleNodeToXml(movieNode, movie.media, 'media')
+
+
+    def addSeriesToXml(self, node, series):
+        """
+        Add a series object, its data and its child movies to the xml tree at
+        the specified node.
+        """
+
+        seriesNode = etree.SubElement(node, 'series')
+
+        self.addSingleNodeToXml(seriesNode, series.title, 'title')
+        for movie in series.series:
+            self.addMovieToXml(seriesNode, movie)
+
+
+    def addSingleNodeToXml(self, node, data, tag):
+        """
+        Construct a sub-element of the node to contain the data.
+        """
+
+        dataNode = etree.SubElement(node, tag)
+        dataNode.text = data
+
+
+    def addMultipleNodesToXml(self, node, semiColonDataText, tag):
+        """
+        Construct child nodes to hold the text data from a semicolon-delimited
+        string.
+        """
+
+        dataList = semiColonDataText.split(';')
+        for data in dataList:
+            self.addSingleNodeToXml(node, data.strip(), tag)
 
 
     def extractMovieTreeAsList(self, treeIter):
         """
         Extract the movie data from the movieTreeStore in the form of a list.
 
-        Recursively construct a list of the movies in the rows and child rows
-        of the store.
-        The base treeIter must be movieTreeStore.get_iter_first()
+        Recursively construct a list of the movies and series in the rows and
+        child rows of the store.
+        The base treeIter should point to the tree root, i.e.,
+        movieTreeStore.get_iter_first()
         """
 
         list = []
         while treeIter:
-            list.append(Movie.fromList(self.movieList.movieTreeStore[treeIter]))
             if self.movieList.movieTreeStore.iter_has_child(treeIter):
+                seriesList = []
                 childIter = \
                     self.movieList.movieTreeStore.iter_children(treeIter)
-                list.extend(self.extractMovieTreeAsList(childIter))
+                seriesList.extend(self.extractMovieTreeAsList(childIter))
+                list.append(
+    MovieSeries.fromList(self.movieList.movieTreeStore[treeIter], seriesList))
+            else:
+                list.append(
+    Movie.fromList(self.movieList.movieTreeStore[treeIter]))
+
             treeIter = self.movieList.movieTreeStore.iter_next(treeIter)
         return list
 
@@ -145,7 +208,7 @@ class MovieListIO(object):
     def loadPickle(self, fileName):
         """
         Return the data from a pickle file as a list. It is assumed the
-        unpickled objects are Movies.
+        unpickled objects are Movies or MovieSeries.
         """
 
         try:
@@ -165,14 +228,14 @@ class MovieListIO(object):
         # read the xml file into an lxml etree document
         doc = etree.parse(filename)
 
-        # get the data out of the etree into a list
+        # get the data out of the etree into a list of objects
         root = doc.getroot()
         inputList = []
-        for element in root.iterchildren():
+        for element in root.getchildren():
             if element.tag == 'movie':
                 inputList.append(self.getMovieFromXml(element, None))
             elif element.tag == 'series':
-                inputList.extend(self.getSeriesFromXml(element))
+                inputList.append(self.getSeriesFromXml(element))
             else:
                 print('Unknown tag: {}'.format(element.tag))
         return inputList
@@ -183,17 +246,15 @@ class MovieListIO(object):
         Obtain a movie series from an xml tree object as a list of movies.
         """
 
-        seriesList = []
-        seriesTitle = None
-        for child in series.iterchildren(tag='title'):
-            seriesTitle = child.text
-        seriesList.append(Movie(title=seriesTitle))
+        seriesTitle = series.findtext('title')
 
         # get the movies in the series
-        for movie in series.iterchildren(tag='movie'):
-            seriesList.append(self.getMovieFromXml(movie, seriesTitle))
+        seriesList = []
+        movieNodes = series.findall('movie')
+        for movie in movieNodes:
+            seriesList.append(self.getMovieFromXml(movie, None))
 
-        return seriesList
+        return MovieSeries(title=seriesTitle, series=seriesList)
 
 
     def getMovieFromXml(self, movieElement, seriesTitle):
@@ -201,63 +262,68 @@ class MovieListIO(object):
         Extract xml data as a Movie object.
         """
 
-        movie = Movie(series=seriesTitle)
-        directorList = []
-        starList = []
-        genreList = []
+        title = movieElement.findtext('title')
+        date = movieElement.findtext('date')
+        director = self.getDataFromMultipleNodes(movieElement, 'director')
+        duration = movieElement.findtext('duration')
+        stars = self.getDataFromMultipleNodes(movieElement, 'star')
+        genre = self.getDataFromMultipleNodes(movieElement, 'genre')
+        media = movieElement.findtext('media')
 
-        for data in movieElement.iterchildren(tag='title'):
-            movie.title = data.text
-        for data in movieElement.iterchildren(tag='date'):
-            movie.date = data.text
-        for data in movieElement.iterchildren(tag='director'):
-            directorList.append(data.text)
-        movie.director = '; '.join(directorList)
-        for data in movieElement.iterchildren(tag='duration'):
-            movie.duration = data.text
-        for data in movieElement.iterchildren(tag='star'):
-            starList.append(data.text)
-        movie.stars = '; '.join(starList)
-        for data in movieElement.iterchildren(tag='genre'):
-            genreList.append(data.text)
-        movie.genre = '; '.join(genreList)
-        for data in movieElement.iterchildren(tag='media'):
-            movie.media = data.text
+        return Movie(title=title,
+                     date=date,
+                     director=director,
+                     duration=duration,
+                     stars=stars,
+                     genre=genre,
+                     media=media,
+                     )
 
-        return movie
+
+    def getDataFromMultipleNodes(self, node, tag):
+        """
+        Extract the text data from a particular tagged child node type as a
+        semicolon-delimited list.
+        """
+
+        dataList = []
+        children = node.findall(tag)
+        for child in children:
+            dataList.append(child.text)
+        return '; '.join(dataList)
 
 
     def populateMovieTreeStore(self, movieList):
         """
-        Populate the treeStore from a list of movies.
+        Populate the treeStore from a list of movies and movie series.
         """
 
         for movie in movieList:
-            self.appendMovieToStore(movie)
+            if isinstance(movie, MovieSeries):
+                self.appendSeriesToStore(movie)
+            else:
+                self.appendMovieToStore(movie, None)
 
 
-    def appendMovieToStore(self, movie):
+    def appendSeriesToStore(self, series):
+        """
+        Append a movie series to the movieTreeStore.
+
+        Append the series, then append its movies as its children.
+        """
+
+        seriesIter = self.movieList.movieTreeStore.append(None, series.toList())
+        for movie in series.series:
+            self.appendMovieToStore(movie, seriesIter)
+
+
+    def appendMovieToStore(self, movie, seriesIter):
         """
         Append a movie to the treeStore.
 
-        Find any parent series, then append the movie.
+        The movie is appended as a child of the series indicated by
+        the iterator. If the iterator is null the movie is appended to the root.
         """
-
-        # TODO: this is sooo kludgy - work out the parent iteration
-        movieTreeStore = self.movieList.movieTreeStore
-
-        seriesIter = None
-        try:
-            if movie.series:
-                # find the 'movie' that is the series name
-                movieIter = movieTreeStore.get_iter_first()
-                while movieIter:
-                    if movie.series == movieTreeStore[movieIter][0]:
-                        seriesIter = movieIter
-                        break
-                    movieIter = movieTreeStore.iter_next(movieIter)
-        except AttributeError as a:
-            pass
 
         self.movieList.movieTreeStore.append(seriesIter, movie.toList())
 
