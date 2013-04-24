@@ -341,7 +341,7 @@ class MovieListIO(object):
         fileHandler = io.open(self.movieList.getFileName(), 'rt')
 
         # get the data and add it to the list store.
-        self.movieList.movieListStore.clear()
+        self.movieList.movieTreeStore.clear()
         while True:
             data = fileHandler.readline()
             if not data:
@@ -357,5 +357,5 @@ class MovieListIO(object):
                           genre=dataList[4],
                           stars=dataList[5],
                           )
-            self.movieList.movieListStore.append(movie.toList())
+            self.movieList.movieTreeStore.append(None, movie.toList())
         fileHandler.close()

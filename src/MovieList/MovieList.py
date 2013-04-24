@@ -27,6 +27,9 @@ from Movie import Movie, MovieSeries
 from MovieEditDialog import MovieEditDialog
 from MovieListIO import MovieListIO
 
+# test only
+from testData import testMovies
+
 # 'constants' for statusbar io
 ADD = 'add'
 EDIT = 'edit'
@@ -43,54 +46,6 @@ CONTEXT = {ADD: ['Added: {} ({})', 'Add aborted', ''],
            PLAY: ['Played: {}', 'Play aborted',
                   'Play: no media to play']
            }
-
-# test data
-testMovies = [
-              Movie(title='A Test',
-                    date=1999,
-                    director='Bob Bowles',
-                    duration=30,
-                    stars='Bob Bowles; Zhang Dehua',
-                    genre='Western',
-                    ),
-              MovieSeries(title='This Is The Test Series',
-                          series=[
-                                  Movie(title='This Is Test Movie 1',
-                                        date=2000,
-                                        director='Bob Bowles',
-                                        duration=60,
-                                        stars='Zhang Dehua; Bob Bowles; Mum',
-                                        genre='Fantasy Football',
-                                        media='avi',
-                                        ),
-                                  Movie(title='This Is Test Movie 2',
-                                        date=2001,
-                                        director='Bob Bowles',
-                                        duration=90,
-                                        stars='Bob Bowles; Mum; Zhang Dehua',
-                                        genre='Domestic Drama',
-                                        media='dvd',
-                                        ),
-                                  Movie(title='This Is Test Movie 3',
-                                        date=2005,
-                                        director='Bob Bowles',
-                                        duration=120,
-                                        stars='Mum; Zhang Dehua; Bob Bowles',
-                                        genre='Documentary',
-                                        media='stream',
-                                        ),
-                                  ],
-                          ),
-              Movie(title='Yet Another One Not In The Series',
-                    date=2006,
-                    director='Mum',
-                    duration=10,
-                    stars='Mum, Bob Bowles',
-                    genre='Soap Opera',
-                    ),
-              ]
-
-print('Test movies:\n' + '\n'.join('{}'.format(movie) for movie in testMovies))
 
 
 class MovieList:
