@@ -35,7 +35,7 @@ class MovieEditDialog(object):
     """
 
 
-    def __init__(self, parent=None, movie=defaultMovie, seriesName=None,
+    def __init__(self, parent=None, movie=Movie(), seriesName=None,
                  movieTreeStore=None):
         """
         Construct and run the dialog

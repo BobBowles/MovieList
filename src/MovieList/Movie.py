@@ -69,6 +69,7 @@ class Movie(object):
         4    stars        the main stars cited (;-delimited list)
         5    genre        the movie's genre (;-delimited list)
         6    media        the location of the movie file on the local system
+        7    False        only used in the treeStore
         """
 
         # fix for legacy versions with numeric attributes
@@ -82,6 +83,7 @@ class Movie(object):
                 self.stars,
                 self.genre,
                 self.media,
+                False,  # identifies this list as a movie not a series
                 ]
 
 
@@ -146,11 +148,13 @@ class MovieSeries(Movie):
 
         The order of parameters in the list is:
         0    title        the name of the movie
-        1-6  None
+        1-6  None         not applicable to a series
+        7    True         only used in the treeStore
         """
 
         return [self.title,
                 None, None, None, None, None, None,
+                True,  # identifies this list as a series not a movie
                 ]
 
 

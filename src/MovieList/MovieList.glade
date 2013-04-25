@@ -55,7 +55,6 @@
     <property name="stock_id">gtk-convert</property>
     <signal name="activate" handler="on_importAction_activate" swapped="no"/>
   </object>
-  <object class="GtkTreeModelSort" id="movieListModelSort"/>
   <object class="GtkTreeStore" id="movieTreeStore">
     <columns>
       <!-- column-name Title -->
@@ -72,10 +71,9 @@
       <column type="gchararray"/>
       <!-- column-name Media -->
       <column type="gchararray"/>
+      <!-- column-name Series -->
+      <column type="gboolean"/>
     </columns>
-  </object>
-  <object class="GtkTreeModelSort" id="movieTreeModelSort">
-    <property name="model">movieTreeStore</property>
   </object>
   <object class="GtkAction" id="playAction">
     <property name="label" translatable="yes">_Play Movie</property>
@@ -84,6 +82,10 @@
     <property name="stock_id">gtk-media-play</property>
     <signal name="activate" handler="on_playAction_activate" swapped="no"/>
   </object>
+  <object class="GtkTreeModelSort" id="movieTreeModelSort">
+    <property name="model">movieTreeStore</property>
+  </object>
+  <object class="GtkTreeModelSort" id="movieTreeModelSort "/>
   <object class="GtkWindow" id="window">
     <property name="can_focus">False</property>
     <child>

@@ -290,7 +290,11 @@ class MovieListIO(object):
         children = node.findall(tag)
         for child in children:
             dataList.append(child.text)
-        return '; '.join(dataList)
+
+        if not dataList:
+            return '; '.join(dataList)
+        else:
+            return None
 
 
     def populateMovieTreeStore(self, movieList):
