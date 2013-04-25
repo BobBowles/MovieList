@@ -27,21 +27,6 @@ import datetime
 MIN_YEAR = 1900
 MIN_TIME = 0
 
-# test data
-testMovie = Movie(title='This Is A Test Movie',
-                  date=2000,
-                  director='Bob Bowles',
-                  duration=100,
-                  stars='Zhang Dehua; Bob Bowles; Mum',
-                  genre='Domestic Drama',
-                  media='avi',
-                  )
-defaultMovie = Movie(title='TEST', date=2000, director='', duration=60,
-                     stars='; delimited list',
-                     genre='; delimited list',
-                     media='; delimited list',
-                     )
-
 
 
 class MovieEditDialog(object):
