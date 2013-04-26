@@ -20,7 +20,7 @@ Created on: 28 Mar 2013
 """
 
 from gi.repository import Gtk, Gdk
-from constants import DIALOG_BUILD_FILE
+from constants import MOVIE_DIALOG_BUILD_FILE as DIALOG_BUILD_FILE
 from Movie import Movie
 import datetime
 

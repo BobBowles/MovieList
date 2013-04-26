@@ -28,5 +28,7 @@ import os
 # define the resource paths
 UI_BUILD_FILE = os.path.join(os.getcwd(), 'MovieList.glade')
 UI_CSS_FILE = os.path.join(os.getcwd(), 'MovieList.css')
-DIALOG_BUILD_FILE = os.path.join(os.getcwd(), 'MovieEditDialog.glade')
+MOVIE_DIALOG_BUILD_FILE = os.path.join(os.getcwd(), 'MovieEditDialog.glade')
+SERIES_DIALOG_BUILD_FILE = os.path.join(os.getcwd(),
+                                        'MovieSeriesEditDialog.glade')
 

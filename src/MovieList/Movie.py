@@ -33,7 +33,7 @@ class Movie(object):
 
 
     def __init__(self,
-                 title='',
+                 title=DEFAULT_TEXT,
                  date=DEFAULT_DATE,
                  director=DEFAULT_TEXT,
                  duration=DEFAULT_DURATION,
@@ -133,7 +133,7 @@ class MovieSeries(Movie):
     """
 
 
-    def __init__(self, title=None, series=[]):
+    def __init__(self, title=DEFAULT_TEXT, series=[]):
         """
         Initialize the attributes.
         """

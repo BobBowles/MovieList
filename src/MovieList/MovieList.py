@@ -25,6 +25,7 @@ from gi.repository import Gtk, Gdk
 from constants import UI_BUILD_FILE, UI_CSS_FILE
 from Movie import Movie, MovieSeries
 from MovieEditDialog import MovieEditDialog
+from MovieSeriesEditDialog import MovieSeriesEditDialog
 from MovieListIO import MovieListIO
 
 # test only
@@ -38,14 +39,19 @@ PLAY = 'play'
 OK = 0
 ABORT = 1
 WARN = 2
-CONTEXT = {ADD: ['Added: {} ({})', 'Add aborted', ''],
-           EDIT: ['Edited: {} ({})', 'Edit aborted',
+DATE = '({})'
+CONTEXT = {ADD: ['Added: {} {}', 'Add aborted', ''],
+           EDIT: ['Edited: {} {}', 'Edit aborted',
                   'Edit: Select a movie to edit'],
-           DELETE: ['Deleted: {} ({})', 'Delete aborted',
+           DELETE: ['Deleted: {} {}', 'Delete aborted',
                     'Delete: Select a movie to delete'],
            PLAY: ['Played: {}', 'Play aborted',
                   'Play: no media to play']
            }
+SERIES_FLAG = 7  # series flag is in col 7 of the tree model
+MOVIE_RESPONSE = 1
+MOVIE_SERIES_RESPONSE = 2
+
 
 
 class MovieList:
@@ -66,8 +72,7 @@ class MovieList:
         self.builder.add_from_file(UI_BUILD_FILE)
         self.builder.connect_signals(self)
 
-        # TODO: references to the widgets we need to manipulate
-        # self.movieListStore = self.builder.get_object('movieListStore')
+        # references to the widgets we need to manipulate
         self.movieTreeStore = self.builder.get_object('movieTreeStore')
 
         self.movieTreeView = self.builder.get_object('movieTreeView')
@@ -306,17 +311,36 @@ class MovieList:
         # the statusbar context
         contextId = self.statusbar.get_context_id(ADD)
 
-        # an empty movie object to fill in
-        movie = Movie()
-        seriesIndex = seriesName = None
-        response, newMovie, newSeriesName = self.editMovieDialog(movie,
-                                                                 seriesName)
-        newSeriesIndex = self.getSeriesIndexFromName(newSeriesName)
+        # a selector to choose movie or series add
+        dialog = Gtk.MessageDialog(self.window,
+                                   Gtk.DialogFlags.MODAL,
+                                   Gtk.MessageType.QUESTION,
+                                   Gtk.ButtonsType.NONE,
+                                   'Add a Movie or a Movie Series?',
+                                   )
+        dialog.add_buttons('Movie', MOVIE_RESPONSE,
+                           'Movie Series', MOVIE_SERIES_RESPONSE,
+                           Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
+        dialog.set_decorated(False)
+        selectionResponse = dialog.run()
+        dialog.destroy()
+        if selectionResponse == Gtk.ResponseType.CANCEL:
+            return
+
+        response = movieEntity = seriesIndex = None
+        newMovieEntity = newSeriesIndex = None
+        if selectionResponse == MOVIE_SERIES_RESPONSE:
+            movieEntity = MovieSeries()
+            response, newMovieEntity = self.editMovieSeriesDialog(movieEntity)
+        elif selectionResponse == MOVIE_RESPONSE:
+            movieEntity = Movie()
+            response, newMovieEntity, seriesIndex, newSeriesIndex = \
+                self.editMovieDialog(movieEntity, None)
 
         # update the model and display
         self.updateMovieEntry(contextId, ADD, None, response,
-                              movie, seriesIndex,
-                              newMovie, newSeriesIndex)
+                              movieEntity, seriesIndex,
+                              newMovieEntity, newSeriesIndex)
 
 
     def on_editAction_activate(self, widget):
@@ -331,20 +355,23 @@ class MovieList:
         # context of statusbar messages
         contextId = self.statusbar.get_context_id(EDIT)
 
-        # do the edit
-        treeIndex, movie = self.getMovieFromSelection(contextId, EDIT)
-        seriesIndex, seriesName = self.findMovieSeries(treeIndex)
-        response, editedMovie, editedSeriesName = \
-            self.editMovieDialog(movie, seriesName)
+        # select the movie/series to change
+        treeIndex, movieEntity = self.getMovieOrSeriesFromSelection(contextId,
+                                                                    EDIT)
+        response = seriesIndex = editedSeriesIndex = editedMovieEntity = None
 
-        editedSeriesIndex = (self.getSeriesIndexFromName(editedSeriesName)
-                             if editedSeriesName != seriesName
-                             else seriesIndex)
+        # invoke the appropriate dialog
+        if isinstance(movieEntity, MovieSeries):
+            response, editedMovieEntity = \
+                self.editMovieSeriesDialog(movieEntity)
+        else:
+            response, editedMovieEntity, seriesIndex, editedSeriesIndex = \
+                self.editMovieDialog(movieEntity, treeIndex)
 
         # update the model and display
         self.updateMovieEntry(contextId, EDIT, treeIndex, response,
-                              movie, seriesIndex,
-                              editedMovie, editedSeriesIndex)
+                              movieEntity, seriesIndex,
+                              editedMovieEntity, editedSeriesIndex)
 
 
     def findMovieSeries(self, movieIndex):
@@ -373,7 +400,7 @@ class MovieList:
 
     def on_deleteAction_activate(self, widget):
         """
-        Handler for the movie delete action. Delete the selected movie.
+        Handler for the movie delete action. Delete the selected movie/series.
 
         Confirmation is required.
         """
@@ -381,16 +408,21 @@ class MovieList:
         # context of statusbar messages
         contextId = self.statusbar.get_context_id(DELETE)
 
-        # get the current movie selection
-        treeIndex, movie = self.getMovieFromSelection(contextId, DELETE)
+        # get the current movie/series selection
+        treeIndex, movieEntity = self.getMovieOrSeriesFromSelection(contextId,
+                                                                    DELETE)
 
         # invoke the confirmation dialog
+        message = ('Confirm delete of series {}'.format(movieEntity.title)
+                   if isinstance(movieEntity, MovieSeries)
+                   else
+                   'Confirm delete of movie {} ({})'.format(movieEntity.title,
+                                                            movieEntity.date))
         dialog = Gtk.MessageDialog(self.window,
                                    Gtk.DialogFlags.MODAL,
                                    Gtk.MessageType.WARNING,
                                    Gtk.ButtonsType.OK_CANCEL,
-                                   'Confirm delete of movie {} ({})'
-                                   .format(movie.title, movie.date),
+                                   message,
                                    )
         dialog.set_decorated(False)
         response = dialog.run()
@@ -398,12 +430,12 @@ class MovieList:
 
         # update the display
         self.updateMovieEntry(contextId, DELETE, treeIndex, response,
-                              movie, None, None, None)
+                              movieEntity, None, None, None)
 
 
-    def getMovieFromSelection(self, contextId, context):
+    def getMovieOrSeriesFromSelection(self, contextId, context):
         """
-        Obtain a movie from the currently-selected treeView row.
+        Obtain a movie or series from the currently-selected treeView row.
         """
 
         # get the current movie selection
@@ -411,7 +443,13 @@ class MovieList:
         if treeModel is None or treeIndex is None:
             self.displaySelectMovieErrorMessage(contextId, context)
             return
-        return treeIndex, Movie.fromList(treeModel[treeIndex])
+        if treeModel[treeIndex][SERIES_FLAG]:
+            childIter = self.movieTreeStore.iter_children(treeIndex)
+            seriesList = self.movieListIO.extractMovieTreeAsList(childIter)
+            return treeIndex, MovieSeries.fromList(treeModel[treeIndex],
+                                                   seriesList)
+        else:
+            return treeIndex, Movie.fromList(treeModel[treeIndex])
 
 
     def displaySelectMovieErrorMessage(self, contextId, context):
@@ -433,27 +471,42 @@ class MovieList:
         return
 
 
-    def editMovieDialog(self, movie, seriesName):
+    def editMovieDialog(self, movie, treeIndex):
         """
-        Invoke the dialog.
+        Invoke the dialog, return the edited movie and series information.
         """
 
+        seriesIndex, seriesName = (self.findMovieSeries(treeIndex) if treeIndex 
+                                   else (None, None))
         dialog = MovieEditDialog(parent=self.window,
                                  movie=movie, seriesName=seriesName,
                                  movieTreeStore=self.movieTreeStore)
+        response, editedMovie, editedSeriesName = dialog.run()
+        editedSeriesIndex = (self.getSeriesIndexFromName(editedSeriesName)
+                             if editedSeriesName != seriesName
+                             else seriesIndex)
+        return response, editedMovie, seriesIndex, editedSeriesIndex
+
+
+    def editMovieSeriesDialog(self, movieSeries):
+        """
+        Invoke the dialog, return the edited series information.
+        """
+
+        dialog = MovieSeriesEditDialog(parent=self.window, series=movieSeries)
         return dialog.run()
 
 
     def updateMovieEntry(self, contextId, context, treeIndex, response,
-                         originalMovie, originalSeriesIndex,
-                         modifiedMovie, modifiedSeriesIndex):
+                         originalMovieEntity, originalSeriesIndex,
+                         modifiedMovieEntity, modifiedSeriesIndex):
         """
         Update the model and display.
         """
 
         if (response == Gtk.ResponseType.OK and
-            ((modifiedMovie != originalMovie
-              if modifiedMovie else True) or
+            ((modifiedMovieEntity != originalMovieEntity
+              if modifiedMovieEntity else True) or
              (modifiedSeriesIndex != originalSeriesIndex
               if modifiedSeriesIndex else True))):
 
@@ -467,11 +520,18 @@ class MovieList:
 
             # to edit or add we add the modified/added entry
             if context == ADD or context == EDIT:
-                self.movieListIO.appendMovieToStore(modifiedMovie,
+                self.movieListIO.appendMovieToStore(modifiedMovieEntity,
                                                     modifiedSeriesIndex)
-            title, date = ((modifiedMovie.title, modifiedMovie.date)
-                           if modifiedMovie else
-                           (originalMovie.title, originalMovie.date))
+
+            # write to status bar
+            date = ''
+            if not isinstance(originalMovieEntity, MovieSeries):
+                date = (DATE.format(modifiedMovieEntity.date)
+                        if modifiedMovieEntity
+                        else DATE.format(originalMovieEntity.date))
+            title = (modifiedMovieEntity.title
+                           if modifiedMovieEntity else
+                           originalMovieEntity.title)
             self.statusbar.push(contextId,
                                 CONTEXT[context][OK].format(title, date))
 
@@ -496,7 +556,7 @@ class MovieList:
             childIter = self.movieTreeStore.iter_children(seriesIter)
 
 
-    # TODO: Tools menu actions
+    # Tools menu actions
 
     def on_importAction_activate(self, widget):
         """
@@ -563,13 +623,6 @@ class MovieList:
 
 
 
-# # configure themed styles for the grid buttons
-# cssProvider = Gtk.CssProvider()
-# cssProvider.load_from_path(UI_CSS_FILE)
-# screen = Gdk.Screen.get_default()
-# styleContext = Gtk.StyleContext()
-# styleContext.add_provider_for_screen(screen, cssProvider,
-#                                     Gtk.STYLE_PROVIDER_PRIORITY_USER)
 
 app = MovieList()
 Gtk.main()
