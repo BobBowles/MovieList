@@ -579,7 +579,7 @@ class MovieList:
             self.statusbar.push(context, 'Import: import aborted')
 
 
-    # TODO: Help menu actions
+    # Help menu actions
 
     def on_aboutAction_activate(self, widget):
         """
@@ -600,6 +600,7 @@ class MovieList:
         import from a text file as csv (see examples).
         """)
         dialog.set_website('http://bbclimited.com')
+        dialog.set_decorated(False)
         # dialog.set_logo('none')
 
         dialog.run()
@@ -642,8 +643,23 @@ class MovieList:
         A quick clean kill of the entire app.
         """
 
-        # TODO: need to save any changes first.
-        print('Destroying main window')
+        # need to save any changes first.
+        context = self.statusbar.get_context_id('Quit')
+        if self.__dirty:
+            dialog = Gtk.MessageDialog(
+                                       self.window,
+                                       Gtk.DialogFlags.MODAL,
+                                       Gtk.MessageType.QUESTION,
+                                       Gtk.ButtonsType.YES_NO,
+                                       'There are unsaved changes. Save now?',
+                                       )
+            dialog.set_decorated(False)
+            response = dialog.run()
+            dialog.destroy()
+            if response == Gtk.ResponseType.YES:
+                self.on_fileSaveAction_activate(widget)
+
+        self.statusbar.push(context, 'Destroying main window')
         Gtk.main_quit()
 
 

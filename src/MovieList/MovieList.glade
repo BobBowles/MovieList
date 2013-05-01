@@ -61,9 +61,6 @@
     <property name="stock_id">gtk-convert</property>
     <signal name="activate" handler="on_importAction_activate" swapped="no"/>
   </object>
-  <object class="GtkTreeModelSort" id="movieTreeModelSort">
-    <property name="model">movieTreeStore</property>
-  </object>
   <object class="GtkTreeStore" id="movieTreeStore">
     <columns>
       <!-- column-name Title -->
@@ -84,6 +81,9 @@
       <column type="gboolean"/>
     </columns>
   </object>
+  <object class="GtkTreeModelSort" id="movieTreeModelSort">
+    <property name="model">movieTreeStore</property>
+  </object>
   <object class="GtkAction" id="playAction">
     <property name="label" translatable="yes">_Play Movie</property>
     <property name="short_label" translatable="yes">_Play</property>
@@ -93,6 +93,7 @@
   </object>
   <object class="GtkWindow" id="window">
     <property name="can_focus">False</property>
+    <signal name="destroy" handler="on_window_destroy" swapped="no"/>
     <child>
       <object class="GtkBox" id="box">
         <property name="visible">True</property>
@@ -272,6 +273,7 @@
                         <property name="related_action">aboutAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
