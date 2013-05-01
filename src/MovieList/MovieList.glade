@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkAction" id="aboutAction">
+    <property name="label" translatable="yes">_About</property>
+    <property name="tooltip" translatable="yes">Information about MovieList</property>
+    <property name="stock_id">gtk-about</property>
+    <signal name="activate" handler="on_aboutAction_activate" swapped="no"/>
+  </object>
   <object class="GtkAction" id="addAction">
     <property name="label" translatable="yes">_Add</property>
     <property name="tooltip" translatable="yes">Add a new movie</property>
@@ -55,6 +61,9 @@
     <property name="stock_id">gtk-convert</property>
     <signal name="activate" handler="on_importAction_activate" swapped="no"/>
   </object>
+  <object class="GtkTreeModelSort" id="movieTreeModelSort">
+    <property name="model">movieTreeStore</property>
+  </object>
   <object class="GtkTreeStore" id="movieTreeStore">
     <columns>
       <!-- column-name Title -->
@@ -82,10 +91,6 @@
     <property name="stock_id">gtk-media-play</property>
     <signal name="activate" handler="on_playAction_activate" swapped="no"/>
   </object>
-  <object class="GtkTreeModelSort" id="movieTreeModelSort">
-    <property name="model">movieTreeStore</property>
-  </object>
-  <object class="GtkTreeModelSort" id="movieTreeModelSort "/>
   <object class="GtkWindow" id="window">
     <property name="can_focus">False</property>
     <child>
@@ -264,11 +269,9 @@
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkImageMenuItem" id="helpAboutImageMenuItem">
-                        <property name="label">gtk-about</property>
-                        <property name="use_action_appearance">False</property>
+                        <property name="related_action">aboutAction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>

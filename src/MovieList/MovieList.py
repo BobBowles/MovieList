@@ -22,7 +22,7 @@ Created on: 24 Mar 2013
 
 import os, subprocess
 from gi.repository import Gtk, Gdk
-from constants import UI_BUILD_FILE, UI_CSS_FILE
+from constants import UI_BUILD_FILE, UI_CSS_FILE, VERSION
 from Movie import Movie, MovieSeries
 from MovieEditDialog import MovieEditDialog
 from MovieSeriesEditDialog import MovieSeriesEditDialog
@@ -580,6 +580,31 @@ class MovieList:
 
 
     # TODO: Help menu actions
+
+    def on_aboutAction_activate(self, widget):
+        """
+        Handler for the about action. Display information about MovieList.
+        """
+
+        dialog = Gtk.AboutDialog()
+        dialog.set_program_name('Movie List')
+        dialog.set_version(VERSION)
+        dialog.set_copyright('(c) Bob Bowles')
+        dialog.set_comments("""
+        A simple app to facilitate browsing lists of movies or videos.
+
+        To import movie data,
+        EITHER
+        use xml (see examples)
+        OR
+        import from a text file as csv (see examples).
+        """)
+        dialog.set_website('http://bbclimited.com')
+        # dialog.set_logo('none')
+
+        dialog.run()
+        dialog.destroy()
+
 
 
     # Context menu actions
