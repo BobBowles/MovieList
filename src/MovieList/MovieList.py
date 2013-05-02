@@ -600,6 +600,8 @@ class MovieList:
         import from a text file as csv (see examples).
         """)
         dialog.set_website('http://bbclimited.com')
+        dialog.set_website_label('Bob Bowles Web Site')
+        dialog.set_license_type(Gtk.License.GPL_3_0)
         dialog.set_decorated(False)
         # dialog.set_logo('none')
 
