@@ -22,7 +22,7 @@ Created on: 24 Mar 2013
 
 import os, subprocess
 from gi.repository import Gtk, Gdk
-from constants import UI_BUILD_FILE, UI_CSS_FILE, VERSION
+from constants import UI_BUILD_FILE, UI_CSS_FILE, SERIES_COL_FLAG, VERSION
 from Movie import Movie, MovieSeries
 from MovieEditDialog import MovieEditDialog
 from MovieSeriesEditDialog import MovieSeriesEditDialog
@@ -48,7 +48,6 @@ CONTEXT = {ADD: ['Added: {} {}', 'Add aborted', ''],
            PLAY: ['Played: {}', 'Play aborted',
                   'Play: no media to play']
            }
-SERIES_FLAG = 7  # series flag is in col 7 of the tree model
 MOVIE_RESPONSE = 1
 MOVIE_SERIES_RESPONSE = 2
 
@@ -443,7 +442,7 @@ class MovieList:
         if treeModel is None or treeIndex is None:
             self.displaySelectMovieErrorMessage(contextId, context)
             return
-        if treeModel[treeIndex][SERIES_FLAG]:
+        if treeModel[treeIndex][SERIES_COL_FLAG]:
             childIter = self.movieTreeStore.iter_children(treeIndex)
             seriesList = self.movieListIO.extractMovieTreeAsList(childIter)
             return treeIndex, MovieSeries.fromList(treeModel[treeIndex],

@@ -26,6 +26,7 @@ one place for ease of maintenance.
 import os
 
 VERSION = '0.1'
+SERIES_COL_FLAG = 7  # series flag is in col 7 of the tree model
 
 # define the resource paths
 UI_BUILD_FILE = os.path.join(os.getcwd(), 'MovieList.glade')

@@ -21,6 +21,7 @@ Created on: 28 Mar 2013
 
 from gi.repository import Gtk, Gdk
 from constants import MOVIE_DIALOG_BUILD_FILE as DIALOG_BUILD_FILE
+from constants import SERIES_COL_FLAG
 from Movie import Movie
 import datetime
 
@@ -63,13 +64,14 @@ class MovieEditDialog(object):
         now = datetime.datetime.now()
         self.dateSpinbutton.set_range(MIN_YEAR, now.year)
 
-        # set up the combobox entries from the tree store
+        # only list series in the seriesComboBox
         index = 0
         for row in movieTreeStore:
-            self.seriesComboBox.append(None, row[0])
-            if seriesName and row[0] == seriesName:
-                self.seriesComboBox.set_active(index)
-            index += 1
+            if row[SERIES_COL_FLAG]:
+                self.seriesComboBox.append(None, row[0])
+                if seriesName and row[0] == seriesName:
+                    self.seriesComboBox.set_active(index)
+                index += 1
 
         # populate the dialog fields
         self.titleEntry.set_text(movie.title)
