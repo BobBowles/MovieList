@@ -285,7 +285,7 @@ class MovieList:
         """
 
         contextId = self.statusbar.get_context_id(PLAY)
-        treeIndex, movie = self.getMovieFromSelection(contextId, PLAY)
+        treeIndex, movie = self.getMovieOrSeriesFromSelection(contextId, PLAY)
 
         # ensure media file is not blank
         filename = movie.media

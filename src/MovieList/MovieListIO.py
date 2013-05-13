@@ -291,7 +291,7 @@ class MovieListIO(object):
         for child in children:
             dataList.append(child.text)
 
-        if not dataList:
+        if dataList and dataList[0]:
             return '; '.join(dataList)
         else:
             return None
