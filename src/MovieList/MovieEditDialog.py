@@ -77,11 +77,14 @@ class MovieEditDialog(object):
         self.titleEntry.set_text(movie.title)
         self.dateSpinbutton.set_value(int(movie.date) if movie.date
                                       else MIN_YEAR)
-        self.directorEntry.set_text(movie.director)
+        if movie.director:
+            self.directorEntry.set_text(movie.director)
         self.durationSpinbutton.set_value(int(movie.duration) if movie.duration
                                           else MIN_TIME)
-        self.starsEntry.set_text(movie.stars)
-        self.genreEntry.set_text(movie.genre)
+        if movie.stars:
+            self.starsEntry.set_text(movie.stars)
+        if movie.genre:
+            self.genreEntry.set_text(movie.genre)
         if movie.media:
             self.mediaChooserButton.set_filename(movie.media)
 

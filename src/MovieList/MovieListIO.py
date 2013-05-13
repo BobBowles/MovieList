@@ -156,9 +156,10 @@ class MovieListIO(object):
         string.
         """
 
-        dataList = semiColonDataText.split(';')
-        for data in dataList:
-            self.addSingleNodeToXml(node, data.strip(), tag)
+        if semiColonDataText:
+            dataList = semiColonDataText.split(';')
+            for data in dataList:
+                self.addSingleNodeToXml(node, data.strip(), tag)
 
 
     def extractMovieTreeAsList(self, treeIter):
