@@ -19,9 +19,8 @@ Created on: 28 Mar 2013
 @author: Bob Bowles <bobjohnbowles@gmail.com>
 """
 
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk
 from constants import MOVIE_DIALOG_BUILD_FILE as DIALOG_BUILD_FILE
-from constants import SERIES_COL_FLAG
 from Movie import Movie
 import datetime
 
@@ -67,7 +66,7 @@ class MovieEditDialog(object):
         # only list series in the seriesComboBox
         index = 0
         for row in movieTreeStore:
-            if row[SERIES_COL_FLAG]:
+            if row[-1]:
                 self.seriesComboBox.append(None, row[0])
                 if seriesName and row[0] == seriesName:
                     self.seriesComboBox.set_active(index)

@@ -19,7 +19,7 @@ Created on: 25 Apr 2013
 @author: Bob Bowles <bobjohnbowles@gmail.com>
 """
 
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk
 from constants import SERIES_DIALOG_BUILD_FILE as DIALOG_BUILD_FILE
 from Movie import MovieSeries
 

@@ -22,7 +22,7 @@ Created on: 24 Mar 2013
 
 import os, subprocess
 from gi.repository import Gtk, Gdk
-from constants import UI_BUILD_FILE, UI_CSS_FILE, SERIES_COL_FLAG, VERSION
+from constants import UI_BUILD_FILE, VERSION
 from Movie import Movie, MovieSeries
 from MovieEditDialog import MovieEditDialog
 from MovieSeriesEditDialog import MovieSeriesEditDialog
@@ -73,19 +73,22 @@ class MovieList:
 
         # references to the widgets we need to manipulate
         self.movieTreeStore = self.builder.get_object('movieTreeStore')
-
         self.movieTreeView = self.builder.get_object('movieTreeView')
         self.movieTreeSelection = self.builder.get_object('movieTreeSelection')
+        self.movieTreeModelFilter = \
+            self.builder.get_object('movieTreeModelFilter')
+        self.filterMovieEntry = self.builder.get_object('filterMovieEntry')
         self.statusbar = self.builder.get_object('statusbar')
         self.fileSaveAction = self.builder.get_object('fileSaveAction')
 
-        # apply any non-standard column rendering
+        # apply custom settings not provided in the glade file
         self.customiseRendering()
+        self.customiseFilter()
 
         # add the io module
         self.movieListIO = MovieListIO(self)
 
-        # use the io module to populate with the test data
+        # TODO: DEV ONLY use the io module to populate with the test data
         self.movieListIO.populateMovieTreeStore(testMovies)
 
         # initialize internal flags for the data status
@@ -98,7 +101,7 @@ class MovieList:
         self.window.show_all()
 
 
-    # TODO: other action(s) go here
+    # other action(s) go here
 
     def customiseRendering(self):
         """
@@ -141,6 +144,49 @@ class MovieList:
         renderer.props.wrap_mode = Gtk.WrapMode.WORD
         renderer.props.wrap_width = \
             self.builder.get_object(columnName).get_min_width()
+
+
+    def customiseFilter(self):
+        """
+        Set up the filter function.
+        """
+
+        # self.filterData = self.filterMovieEntry.get_text()
+        self.movieTreeModelFilter.set_visible_func(self.makeMovieVisible,
+                                                   self.filterMovieEntry)
+
+
+    def makeMovieVisible(self, model, iteration, data):
+        """
+        This function is passed to the TreeModelFilter to decide which rows to
+        display.
+        """
+
+        if model[iteration][-1]:
+            return True  # series always visible
+        elif not data.get_text():
+            print('Filter Text is empty')
+            return True
+        else:
+            filterText = data.get_text().lower()
+            nonEmptyRow = False
+            for value in model[iteration][:-1]:
+                if isinstance(value, str):
+                    if value:
+                        nonEmptyRow = True
+                        if filterText in value.lower():
+                            return True  # match found for filter text
+            return not nonEmptyRow  # allows empty entry to be visible
+
+
+    def on_filterMovieEntry_changed(self, widget):
+        """
+        Handler for the filterMovieEntry widget.
+
+        Update the data for the movieTreeModelFilter.
+        """
+
+        self.movieTreeModelFilter.refilter()
 
 
     def setDirty(self, dirty):
@@ -198,7 +244,7 @@ class MovieList:
         self.setDirty(False)
 
 
-    # TODO: File menu and toolbar actions
+    # File menu and toolbar actions
 
     def on_fileNewAction_activate(self, widget):
         """
@@ -442,7 +488,7 @@ class MovieList:
         if treeModel is None or treeIndex is None:
             self.displaySelectMovieErrorMessage(contextId, context)
             return
-        if treeModel[treeIndex][SERIES_COL_FLAG]:
+        if treeModel[treeIndex][-1]:
             childIter = self.movieTreeStore.iter_children(treeIndex)
             seriesList = self.movieListIO.extractMovieTreeAsList(childIter)
             return treeIndex, MovieSeries.fromList(treeModel[treeIndex],
@@ -475,7 +521,7 @@ class MovieList:
         Invoke the dialog, return the edited movie and series information.
         """
 
-        seriesIndex, seriesName = (self.findMovieSeries(treeIndex) if treeIndex 
+        seriesIndex, seriesName = (self.findMovieSeries(treeIndex) if treeIndex
                                    else (None, None))
         dialog = MovieEditDialog(parent=self.window,
                                  movie=movie, seriesName=seriesName,

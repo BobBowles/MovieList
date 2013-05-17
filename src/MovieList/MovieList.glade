@@ -84,6 +84,9 @@
   <object class="GtkTreeModelSort" id="movieTreeModelSort">
     <property name="model">movieTreeStore</property>
   </object>
+  <object class="GtkTreeModelFilter" id="movieTreeModelFilter">
+    <property name="child_model">movieTreeModelSort</property>
+  </object>
   <object class="GtkAction" id="playAction">
     <property name="label" translatable="yes">_Play Movie</property>
     <property name="short_label" translatable="yes">_Play</property>
@@ -403,6 +406,40 @@
                 <property name="homogeneous">True</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkSeparatorToolItem" id="separator2">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="use_action_appearance">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolItem" id="filterMovieContainer">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="use_action_appearance">False</property>
+                <child>
+                  <object class="GtkEntry" id="filterMovieEntry">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="invisible_char">•</property>
+                    <property name="primary_icon_stock">gtk-find</property>
+                    <property name="placeholder_text">Filter Text</property>
+                    <signal name="changed" handler="on_filterMovieEntry_changed" swapped="no"/>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -424,7 +461,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="vscroll_policy">natural</property>
-                <property name="model">movieTreeStore</property>
+                <property name="model">movieTreeModelFilter</property>
                 <property name="expander_column">titleColumn</property>
                 <property name="reorderable">True</property>
                 <property name="level_indentation">6</property>
