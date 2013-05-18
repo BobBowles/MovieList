@@ -27,10 +27,14 @@ import os
 
 VERSION = '0.1'
 
-# define the resource paths
+# define the resource paths for the ui
 UI_BUILD_FILE = os.path.join(os.getcwd(), 'MovieList.glade')
 UI_CSS_FILE = os.path.join(os.getcwd(), 'MovieList.css')
 MOVIE_DIALOG_BUILD_FILE = os.path.join(os.getcwd(), 'MovieEditDialog.glade')
 SERIES_DIALOG_BUILD_FILE = os.path.join(os.getcwd(),
                                         'MovieSeriesEditDialog.glade')
 
+# configuration file parameters
+CONFIG_FILE = os.path.expanduser('~/.config/MovieList/MovieList.cfg')
+FILE_SECTION = 'files'
+CURRENT_FILE = 'current file'

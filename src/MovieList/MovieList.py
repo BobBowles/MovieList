@@ -22,13 +22,15 @@ Created on: 24 Mar 2013
 
 import os, subprocess
 from gi.repository import Gtk, Gdk
+from configparser import SafeConfigParser
 from constants import UI_BUILD_FILE, VERSION
+from constants import CONFIG_FILE, FILE_SECTION, CURRENT_FILE
 from Movie import Movie, MovieSeries
 from MovieEditDialog import MovieEditDialog
 from MovieSeriesEditDialog import MovieSeriesEditDialog
 from MovieListIO import MovieListIO
 
-# test only
+# TODO: DEV test only
 from testData import testMovies
 
 # 'constants' for statusbar io
@@ -61,10 +63,42 @@ class MovieList:
 
     def __init__(self):
         """
-        Initialize the MovieList's components.
+        Initialise the MovieList.
 
-        Load the UI elements from the .glade file. Add an IO module to handle
-        data files.
+        Initialise the UI, apply custom settings not dealt with in Glade,
+        restore configuration settings.
+        """
+
+        # load the UI elements
+        self.initializeUI()
+
+        # apply custom settings not provided in the glade file
+        self.customiseRendering()
+        self.customiseFilter()
+
+        # get saved configuration settings and restore them
+        self.restoreConfiguration()
+
+        # add the io module, load in the data
+        self.movieListIO = MovieListIO(self)
+        if self.__filename:
+            self.movieListIO.load()
+        else:
+            # TODO: DEV ONLY use the io module to populate with the test data
+            self.movieListIO.populateMovieTreeStore(testMovies)
+
+        # get a reference to the main window itself and display the window
+        self.window.show_all()
+
+
+    # other action(s) go here
+
+    def initializeUI(self):
+        """
+        Initialize the UI window and its components.
+
+        Start the UI and get references to widgets we will need to refer to
+        later.
         """
 
         self.builder = Gtk.Builder()
@@ -80,28 +114,39 @@ class MovieList:
         self.filterMovieEntry = self.builder.get_object('filterMovieEntry')
         self.statusbar = self.builder.get_object('statusbar')
         self.fileSaveAction = self.builder.get_object('fileSaveAction')
+        self.window = self.builder.get_object('window')
 
-        # apply custom settings not provided in the glade file
-        self.customiseRendering()
-        self.customiseFilter()
 
-        # add the io module
-        self.movieListIO = MovieListIO(self)
+    def restoreConfiguration(self):
+        """
+        Get the last configuration of the Movie List and restore the values.
+        """
 
-        # TODO: DEV ONLY use the io module to populate with the test data
-        self.movieListIO.populateMovieTreeStore(testMovies)
+        self.configuration = SafeConfigParser()
+        configList = self.configuration.read([CONFIG_FILE], encoding='utf-8')
+        if configList:
+            self.__filename = self.configuration[FILE_SECTION][CURRENT_FILE]
+        else:  # first time, create a vanilla configuration
+            self.__filename = None
+            self.configuration.add_section(FILE_SECTION)
+            self.saveConfiguration()
 
-        # initialize internal flags for the data status
-        self.__filename = None
+        # make sure the dirty flag is initialised
         self.__dirty = True
         self.setDirty(False)
 
-        # get a reference to the main window itself and display the window
-        self.window = self.builder.get_object('window')
-        self.window.show_all()
 
+    def saveConfiguration(self):
+        """
+        Save any changes to the configuration options.
+        """
 
-    # other action(s) go here
+        self.configuration.set(FILE_SECTION, CURRENT_FILE,
+                               self.__filename if self.__filename else '')
+        os.makedirs(os.path.dirname(CONFIG_FILE), exist_ok=True)
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as configurationFile:
+            self.configuration.write(configurationFile)
+
 
     def customiseRendering(self):
         """
@@ -151,7 +196,6 @@ class MovieList:
         Set up the filter function.
         """
 
-        # self.filterData = self.filterMovieEntry.get_text()
         self.movieTreeModelFilter.set_visible_func(self.makeMovieVisible,
                                                    self.filterMovieEntry)
 
@@ -165,7 +209,6 @@ class MovieList:
         if model[iteration][-1]:
             return True  # series always visible
         elif not data.get_text():
-            print('Filter Text is empty')
             return True
         else:
             filterText = data.get_text().lower()
@@ -228,14 +271,18 @@ class MovieList:
         response = fileChooserDialog.run()
         ok = response == Gtk.ResponseType.OK
         if ok:
-            self.__filename = fileChooserDialog.get_filename()
-            print('Chosen file {}'.format(self.__filename))
+            self.setFileName(fileChooserDialog.get_filename())
         fileChooserDialog.destroy()
         return ok
 
 
     def getFileName(self):
         return self.__filename
+
+
+    def setFileName(self, filename):
+        self.__filename = filename
+        self.saveConfiguration()
 
 
     def save(self, context):
@@ -256,7 +303,7 @@ class MovieList:
         context = self.statusbar.get_context_id('new')
         self.movieTreeStore.clear()
         self.setDirty(False)
-        self.__filename = None
+        self.setFileName(None)
         self.statusbar.push(context, 'New: empty movie list created')
 
 
@@ -307,6 +354,7 @@ class MovieList:
         # choose a file
         if self.chooseSaveFile('Save', Gtk.FileChooserAction.SAVE):
             self.save(context)
+            self.saveConfiguration()
         else:
             self.statusbar.push(context, 'Save As: save aborted')
 
