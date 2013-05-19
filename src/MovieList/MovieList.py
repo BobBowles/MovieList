@@ -30,9 +30,6 @@ from MovieEditDialog import MovieEditDialog
 from MovieSeriesEditDialog import MovieSeriesEditDialog
 from MovieListIO import MovieListIO
 
-# TODO: DEV test only
-from testData import testMovies
-
 # 'constants' for statusbar io
 ADD = 'add'
 EDIT = 'edit'
@@ -83,9 +80,6 @@ class MovieList:
         self.movieListIO = MovieListIO(self)
         if self.__filename:
             self.movieListIO.load()
-        else:
-            # TODO: DEV ONLY use the io module to populate with the test data
-            self.movieListIO.populateMovieTreeStore(testMovies)
 
         # get a reference to the main window itself and display the window
         self.window.show_all()
