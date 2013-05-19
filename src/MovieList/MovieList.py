@@ -125,7 +125,11 @@ class MovieList:
         self.configuration = SafeConfigParser()
         configList = self.configuration.read([CONFIG_FILE], encoding='utf-8')
         if configList:
-            self.__filename = self.configuration[FILE_SECTION][CURRENT_FILE]
+            # make sure the file exists
+            if os.path.exists(self.configuration[FILE_SECTION][CURRENT_FILE]):
+                self.__filename = self.configuration[FILE_SECTION][CURRENT_FILE]
+            else:
+                self.__filename = None
         else:  # first time, create a vanilla configuration
             self.__filename = None
             self.configuration.add_section(FILE_SECTION)
