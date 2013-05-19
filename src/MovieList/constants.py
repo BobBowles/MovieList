@@ -38,3 +38,5 @@ SERIES_DIALOG_BUILD_FILE = os.path.join(os.getcwd(),
 CONFIG_FILE = os.path.expanduser('~/.config/MovieList/MovieList.cfg')
 FILE_SECTION = 'files'
 CURRENT_FILE = 'current file'
+UI_SECTION = 'ui'
+WINDOW_SIZE = 'window size'

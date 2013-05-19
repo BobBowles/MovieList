@@ -24,7 +24,9 @@ import os, subprocess
 from gi.repository import Gtk, Gdk
 from configparser import SafeConfigParser
 from constants import UI_BUILD_FILE, VERSION
-from constants import CONFIG_FILE, FILE_SECTION, CURRENT_FILE
+from constants import CONFIG_FILE
+from constants import FILE_SECTION, CURRENT_FILE
+from constants import UI_SECTION, WINDOW_SIZE
 from Movie import Movie, MovieSeries
 from MovieEditDialog import MovieEditDialog
 from MovieSeriesEditDialog import MovieSeriesEditDialog
@@ -125,11 +127,19 @@ class MovieList:
             else:
                 # clean out the saved configuration
                 self.__filename = None
-                self.saveConfiguration()
+                # self.saveConfiguration()
+            if self.configuration[UI_SECTION][WINDOW_SIZE]:
+                geometry = \
+                    self.configuration[UI_SECTION][WINDOW_SIZE].split(',')
+                x, y = (int(coord) for coord in geometry)
+                self.window.resize(x, y)
+
         else:  # first time, create a vanilla configuration
             self.__filename = None
             self.configuration.add_section(FILE_SECTION)
-            self.saveConfiguration()
+            self.configuration.add_section(UI_SECTION)
+
+        self.saveConfiguration()
 
         # make sure the dirty flag is initialised
         self.__dirty = True
@@ -143,6 +153,13 @@ class MovieList:
 
         self.configuration.set(FILE_SECTION, CURRENT_FILE,
                                self.__filename if self.__filename else '')
+        # TODO
+#        x, y = self.window.get_size()
+#        print('Geometry (x, y)=({}, {})'.format(x, y))
+        self.configuration.set(UI_SECTION, WINDOW_SIZE,
+                               ', '.join(str(coord)
+                                         for coord in self.window.get_size()))
+
         os.makedirs(os.path.dirname(CONFIG_FILE), exist_ok=True)
         with open(CONFIG_FILE, 'w', encoding='utf-8') as configurationFile:
             self.configuration.write(configurationFile)
@@ -702,7 +719,6 @@ class MovieList:
         dialog.destroy()
 
 
-
     # Context menu actions
 
     def on_movieTreeView_button_press_event(self, widget, event):
@@ -730,6 +746,16 @@ class MovieList:
 
 
     # main window event(s)
+
+    def on_window_check_resize(self, widget):
+        """
+        Handler for resizing the window.
+
+        Updates the configuration to save the new window size.
+        """
+
+        self.saveConfiguration()
+
 
     def on_window_destroy(self, widget):
         """
