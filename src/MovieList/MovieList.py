@@ -121,13 +121,14 @@ class MovieList:
         self.configuration = SafeConfigParser()
         configList = self.configuration.read([CONFIG_FILE], encoding='utf-8')
         if configList:
-            # make sure the file exists
+
+            # restore the last open file
             if os.path.exists(self.configuration[FILE_SECTION][CURRENT_FILE]):
                 self.__filename = self.configuration[FILE_SECTION][CURRENT_FILE]
             else:
-                # clean out the saved configuration
                 self.__filename = None
-                # self.saveConfiguration()
+
+            # restore the last saved window size
             if self.configuration[UI_SECTION][WINDOW_SIZE]:
                 geometry = \
                     self.configuration[UI_SECTION][WINDOW_SIZE].split(',')
@@ -153,9 +154,6 @@ class MovieList:
 
         self.configuration.set(FILE_SECTION, CURRENT_FILE,
                                self.__filename if self.__filename else '')
-        # TODO
-#        x, y = self.window.get_size()
-#        print('Geometry (x, y)=({}, {})'.format(x, y))
         self.configuration.set(UI_SECTION, WINDOW_SIZE,
                                ', '.join(str(coord)
                                          for coord in self.window.get_size()))
