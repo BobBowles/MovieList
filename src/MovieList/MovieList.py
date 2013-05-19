@@ -129,7 +129,9 @@ class MovieList:
             if os.path.exists(self.configuration[FILE_SECTION][CURRENT_FILE]):
                 self.__filename = self.configuration[FILE_SECTION][CURRENT_FILE]
             else:
+                # clean out the saved configuration
                 self.__filename = None
+                self.saveConfiguration()
         else:  # first time, create a vanilla configuration
             self.__filename = None
             self.configuration.add_section(FILE_SECTION)
