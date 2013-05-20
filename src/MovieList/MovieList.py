@@ -26,7 +26,7 @@ from configparser import SafeConfigParser
 from constants import UI_BUILD_FILE, VERSION
 from constants import CONFIG_FILE
 from constants import FILE_SECTION, CURRENT_FILE
-from constants import UI_SECTION, WINDOW_SIZE
+from constants import UI_SECTION, WINDOW_SIZE, COLUMN_WIDTHS
 from Movie import Movie, MovieSeries
 from MovieEditDialog import MovieEditDialog
 from MovieSeriesEditDialog import MovieSeriesEditDialog
@@ -104,6 +104,7 @@ class MovieList:
         # references to the widgets we need to manipulate
         self.movieTreeStore = self.builder.get_object('movieTreeStore')
         self.movieTreeView = self.builder.get_object('movieTreeView')
+        self.movieTreeViewColumns = self.movieTreeView.get_columns()
         self.movieTreeSelection = self.builder.get_object('movieTreeSelection')
         self.movieTreeModelFilter = \
             self.builder.get_object('movieTreeModelFilter')
@@ -135,12 +136,21 @@ class MovieList:
                 x, y = (int(coord) for coord in geometry)
                 self.window.resize(x, y)
 
+            # restore the last saved column widths
+            if self.configuration[UI_SECTION][COLUMN_WIDTHS]:
+                columnWidths = eval(self.configuration[UI_SECTION]
+                                    [COLUMN_WIDTHS])
+                columns = self.movieTreeView.get_columns()
+                for i in range(len(columns)):
+                    columns[i].set_min_width(columnWidths[i])
+                    columns[i].connect('notify::width',
+                                       self.on_column_width_changed)
+
         else:  # first time, create a vanilla configuration
             self.__filename = None
             self.configuration.add_section(FILE_SECTION)
             self.configuration.add_section(UI_SECTION)
-
-        self.saveConfiguration()
+            self.saveConfiguration()
 
         # make sure the dirty flag is initialised
         self.__dirty = True
@@ -157,6 +167,11 @@ class MovieList:
         self.configuration.set(UI_SECTION, WINDOW_SIZE,
                                ', '.join(str(coord)
                                          for coord in self.window.get_size()))
+        columnWidths = []
+        columns = self.movieTreeView.get_columns()
+        for column in columns:
+            columnWidths.append(column.get_width())
+        self.configuration.set(UI_SECTION, COLUMN_WIDTHS, repr(columnWidths))
 
         os.makedirs(os.path.dirname(CONFIG_FILE), exist_ok=True)
         with open(CONFIG_FILE, 'w', encoding='utf-8') as configurationFile:
@@ -744,6 +759,14 @@ class MovieList:
 
 
     # main window event(s)
+
+    def on_column_width_changed(self, widget, data):
+        """
+        Handler for resizing the columns.
+        """
+
+        self.saveConfiguration()
+
 
     def on_window_check_resize(self, widget):
         """
