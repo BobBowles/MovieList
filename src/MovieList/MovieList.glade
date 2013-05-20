@@ -61,6 +61,13 @@
     <property name="stock_id">gtk-convert</property>
     <signal name="activate" handler="on_importAction_activate" swapped="no"/>
   </object>
+  <object class="GtkAction" id="playAction">
+    <property name="label" translatable="yes">_Play Movie</property>
+    <property name="short_label" translatable="yes">_Play</property>
+    <property name="tooltip" translatable="yes">Play the selected movie</property>
+    <property name="stock_id">gtk-media-play</property>
+    <signal name="activate" handler="on_playAction_activate" swapped="no"/>
+  </object>
   <object class="GtkTreeStore" id="movieTreeStore">
     <columns>
       <!-- column-name Title -->
@@ -81,18 +88,11 @@
       <column type="gboolean"/>
     </columns>
   </object>
-  <object class="GtkTreeModelSort" id="movieTreeModelSort">
-    <property name="model">movieTreeStore</property>
-  </object>
   <object class="GtkTreeModelFilter" id="movieTreeModelFilter">
-    <property name="child_model">movieTreeModelSort</property>
+    <property name="child_model">movieTreeStore</property>
   </object>
-  <object class="GtkAction" id="playAction">
-    <property name="label" translatable="yes">_Play Movie</property>
-    <property name="short_label" translatable="yes">_Play</property>
-    <property name="tooltip" translatable="yes">Play the selected movie</property>
-    <property name="stock_id">gtk-media-play</property>
-    <signal name="activate" handler="on_playAction_activate" swapped="no"/>
+  <object class="GtkTreeModelSort" id="movieTreeModelSort">
+    <property name="model">movieTreeModelFilter</property>
   </object>
   <object class="GtkWindow" id="window">
     <property name="can_focus">False</property>
@@ -462,7 +462,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="vscroll_policy">natural</property>
-                <property name="model">movieTreeModelFilter</property>
+                <property name="model">movieTreeModelSort</property>
                 <property name="expander_column">titleColumn</property>
                 <property name="reorderable">True</property>
                 <property name="level_indentation">6</property>
