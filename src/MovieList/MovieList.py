@@ -562,7 +562,7 @@ class MovieList:
         """
 
         # get the current movie selection
-        treeModel, treeIndex = self.movieTreeSelection.get_selected()
+        treeModel, treeIndex = self.getUnderlyingModelSelection()
         if treeModel is None or treeIndex is None:
             self.displaySelectMovieErrorMessage(contextId, context)
             return
@@ -573,6 +573,23 @@ class MovieList:
                                                    seriesList)
         else:
             return treeIndex, Movie.fromList(treeModel[treeIndex])
+
+
+    def getUnderlyingModelSelection(self):
+        """
+        Drill down into the child models of the view to find the base model and
+        iteration of the current selection.
+        """
+
+        parentModel, parentIter = self.movieTreeSelection.get_selected()
+        while True:
+            childModel = parentModel.get_model()
+            childIter = parentModel.convert_iter_to_child_iter(parentIter)
+            if isinstance(childModel, Gtk.TreeStore):
+                return childModel, childIter
+            else:
+                parentModel = childModel
+                parentIter = childIter
 
 
     def displaySelectMovieErrorMessage(self, contextId, context):
@@ -627,6 +644,8 @@ class MovieList:
         Update the model and display.
         """
 
+        print('Original: {}'.format(originalMovieEntity))
+        print('Modified: {}'.format(modifiedMovieEntity))
         if (response == Gtk.ResponseType.OK and
             ((modifiedMovieEntity != originalMovieEntity
               if modifiedMovieEntity else True) or
