@@ -290,7 +290,8 @@ class MovieListIO(object):
         dataList = []
         children = node.findall(tag)
         for child in children:
-            dataList.append(child.text)
+            if child.text:
+                dataList.append(child.text)
 
         if dataList and dataList[0]:
             return '; '.join(dataList)
