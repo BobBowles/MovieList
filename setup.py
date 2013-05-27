@@ -26,6 +26,7 @@ except LookupError:
 from distutils.core import setup
 import os
 
+
 # locale root
 targetLocaleRoot = ''
 # TODO Windows stuff needs fixing
@@ -75,12 +76,12 @@ else:
 # now run setup
 setup(
     name='MovieList',
-    version='1.0.1',
+    version='1.1',
     description='A utility to catalogue and play media.',
     long_description=open('README.txt').read(),
     author='Bob Bowles',
     author_email='bobjohnbowles@gmail.com',
-    url='http://pypi.python.org/pypi/MovieList/1.0',
+    url='http://pypi.python.org/pypi/MovieList/',
     license='GNU General Public License v3 (GPLv3)', # TODO belt-n-braces??
     keywords=["Movie", "Media", "Catalog"],
     classifiers=[
