@@ -53,6 +53,48 @@ MOVIE_RESPONSE = 1
 MOVIE_SERIES_RESPONSE = 2
 
 
+def modifyMovieTreeStore(method):
+    """
+    Decorator for methods to modify a movieTreeStore.
+    """
+
+    def wrapper(self, contextId, context, response,
+                 treeIndex,
+                 originalMovieEntity, originalSeriesIndex,
+                 modifiedMovieEntity, modifiedSeriesIndex):
+
+        # check for a positive user dialog response and the entity has changed
+        if (response == Gtk.ResponseType.OK and
+            ((modifiedMovieEntity != originalMovieEntity
+              if modifiedMovieEntity else True) or
+             (modifiedSeriesIndex != originalSeriesIndex
+              if modifiedSeriesIndex else True))):
+
+            # apply the modifications
+            method(self, treeIndex,
+                   originalMovieEntity, originalSeriesIndex,
+                   modifiedMovieEntity, modifiedSeriesIndex)
+
+            # write to status bar
+            date = ''
+            if not isinstance(originalMovieEntity, MovieSeries):
+                date = (DATE.format(modifiedMovieEntity.date)
+                        if modifiedMovieEntity
+                        else DATE.format(originalMovieEntity.date))
+            title = (modifiedMovieEntity.title
+                           if modifiedMovieEntity else
+                           originalMovieEntity.title)
+            self.statusbar.push(contextId,
+                                CONTEXT[context][OK].format(title, date))
+
+            self.setDirty(True)
+
+        else:
+            self.statusbar.push(contextId, CONTEXT[context][ABORT])
+
+    return wrapper
+
+
 
 class MovieList:
     """
@@ -431,7 +473,7 @@ class MovieList:
         is changed, add the movie information to the list.
         """
 
-        # the statusbar context
+        # the status bar context
         contextId = self.statusbar.get_context_id(ADD)
 
         # a selector to choose movie or series add
@@ -461,9 +503,10 @@ class MovieList:
                 self.editMovieDialog(movieEntity, None)
 
         # update the model and display
-        self.updateMovieEntry(contextId, ADD, None, response,
-                              movieEntity, seriesIndex,
-                              newMovieEntity, newSeriesIndex)
+        self.addMovieEntity(contextId, ADD, response,
+                            None,
+                            movieEntity, seriesIndex,
+                            newMovieEntity, newSeriesIndex)
 
 
     def on_editAction_activate(self, widget):
@@ -475,7 +518,7 @@ class MovieList:
         list.
         """
 
-        # context of statusbar messages
+        # context of status bar messages
         contextId = self.statusbar.get_context_id(EDIT)
 
         # select the movie/series to change
@@ -492,9 +535,10 @@ class MovieList:
                 self.editMovieDialog(movieEntity, treeIndex)
 
         # update the model and display
-        self.updateMovieEntry(contextId, EDIT, treeIndex, response,
-                              movieEntity, seriesIndex,
-                              editedMovieEntity, editedSeriesIndex)
+        self.editMovieEntity(contextId, EDIT, response,
+                             treeIndex,
+                             movieEntity, seriesIndex,
+                             editedMovieEntity, editedSeriesIndex)
 
 
     def findMovieSeries(self, movieIndex):
@@ -515,7 +559,8 @@ class MovieList:
 
         treeIter = self.movieTreeStore.get_iter_first()
         while treeIter:
-            if seriesTitle == self.movieTreeStore[treeIter][0]:
+            if (self.movieTreeStore[treeIter][-1] and
+                seriesTitle == self.movieTreeStore[treeIter][0]):
                 return treeIter
             treeIter = self.movieTreeStore.iter_next(treeIter)
         treeIter = None
@@ -528,7 +573,7 @@ class MovieList:
         Confirmation is required.
         """
 
-        # context of statusbar messages
+        # context of status bar messages
         contextId = self.statusbar.get_context_id(DELETE)
 
         # get the current movie/series selection
@@ -551,9 +596,9 @@ class MovieList:
         response = dialog.run()
         dialog.destroy()
 
-        # update the display
-        self.updateMovieEntry(contextId, DELETE, treeIndex, response,
-                              movieEntity, None, None, None)
+        # update the tree model
+        self.deleteMovieEntity(contextId, DELETE, response,
+                               treeIndex, movieEntity, None, None, None)
 
 
     def getMovieOrSeriesFromSelection(self, contextId, context):
@@ -637,50 +682,53 @@ class MovieList:
         return dialog.run()
 
 
-    def updateMovieEntry(self, contextId, context, treeIndex, response,
+    @modifyMovieTreeStore
+    def addMovieEntity(self, treeIndex,
                          originalMovieEntity, originalSeriesIndex,
                          modifiedMovieEntity, modifiedSeriesIndex):
         """
-        Update the model and display.
+        Add a movie entity to the movieTreeStore.
         """
 
-        print('Original: {}'.format(originalMovieEntity))
-        print('Modified: {}'.format(modifiedMovieEntity))
-        if (response == Gtk.ResponseType.OK and
-            ((modifiedMovieEntity != originalMovieEntity
-              if modifiedMovieEntity else True) or
-             (modifiedSeriesIndex != originalSeriesIndex
-              if modifiedSeriesIndex else True))):
+        self.movieListIO.appendMovieToStore(modifiedMovieEntity,
+                                            modifiedSeriesIndex)
 
-            # to delete or edit we remove the old entry
-            if context == DELETE or context == EDIT:
-                # if the 'movie' entry has children re-parent them to the root
-                if self.movieTreeStore.iter_has_child(treeIndex):
-                    self.reParentChildren(treeIndex, modifiedSeriesIndex)
-                # ... then delete the parent
-                self.movieTreeStore.remove(treeIndex)
 
-            # to edit or add we add the modified/added entry
-            if context == ADD or context == EDIT:
-                self.movieListIO.appendMovieToStore(modifiedMovieEntity,
-                                                    modifiedSeriesIndex)
+    @modifyMovieTreeStore
+    def editMovieEntity(self, treeIndex,
+                          originalMovieEntity, originalSeriesIndex,
+                          modifiedMovieEntity, modifiedSeriesIndex):
+        """
+        Edit a movie entity in the movieTreeStore.
 
-            # write to status bar
-            date = ''
-            if not isinstance(originalMovieEntity, MovieSeries):
-                date = (DATE.format(modifiedMovieEntity.date)
-                        if modifiedMovieEntity
-                        else DATE.format(originalMovieEntity.date))
-            title = (modifiedMovieEntity.title
-                           if modifiedMovieEntity else
-                           originalMovieEntity.title)
-            self.statusbar.push(contextId,
-                                CONTEXT[context][OK].format(title, date))
+        If the modified entity has been re-parented, append the new version to
+        the new parent before deleting the old. Otherwise, change the entity's
+        data in place.
+        """
 
-            self.setDirty(True)
-
+        if originalSeriesIndex == modifiedSeriesIndex:
+            self.movieTreeStore.set(treeIndex,
+                                    modifiedMovieEntity.toList().enumerate())
         else:
-            self.statusbar.push(contextId, CONTEXT[context][ABORT])
+            self.movieListIO.appendMovieToStore(modifiedMovieEntity,
+                                                modifiedSeriesIndex)
+            self.movieTreeStore.remove(treeIndex)
+
+
+    @modifyMovieTreeStore
+    def deleteMovieEntity(self, treeIndex,
+                            originalMovieEntity, originalSeriesIndex,
+                            modifiedMovieEntity, modifiedSeriesIndex):
+        """
+        Delete a movie entity from the movieTreeStore.
+
+        If the entity is a series with children the orphaned movies are
+        re-parented to the root before the entity is deleted.
+        """
+
+        if self.movieTreeStore.iter_has_child(treeIndex):
+            self.reParentChildren(treeIndex, modifiedSeriesIndex)
+        self.movieTreeStore.remove(treeIndex)
 
 
     def reParentChildren(self, seriesIter, newSeriesIter):
