@@ -1,6 +1,6 @@
 
 =============
-MovieList 1.0
+MovieList 1.1
 =============
 
 A utility application to catalogue, sort, filter, and play media files on local 
@@ -13,10 +13,10 @@ In addition to flat lists of media, support is provided to group the media into
 Installation
 ============
 
-For Version 1.0 the only supported platform is Linux. It _should_ work with Mac, 
+For Version 1.1 the only supported platform is Linux. It *should* work with Mac, 
 but I do not have a Mac available for verifying the port. The port to Windows 
 is not possible at present (May 2013) because the Python-gi libraries are not 
-available for that platform (it _may_ be possible to back-port to Python 2.7 and 
+available for that platform (it *may* be possible to back-port to Python 2.7 and 
 use PyGTK instead). 
 
 System Requirements:
@@ -63,4 +63,3 @@ Author:
 =======
 
 Bob Bowles <bobjohnbowles@gmail.com>
-
