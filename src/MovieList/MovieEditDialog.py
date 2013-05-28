@@ -116,7 +116,6 @@ class MovieEditDialog(object):
                           stars=self.starsEntry.get_text(),
                           genre=self.genreEntry.get_text(),
                           media=self.mediaChooserButton.get_filename(),
-                          # series=self.seriesComboBox.get_active_text()
                           )
             seriesName = self.seriesComboBox.get_active_text()
 
@@ -133,6 +132,7 @@ class MovieEditDialog(object):
         """
 
         self.seriesComboBox.set_active(-1)
+
 
 
 
