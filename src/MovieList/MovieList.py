@@ -707,8 +707,8 @@ class MovieList:
         """
 
         if originalSeriesIndex == modifiedSeriesIndex:
-            self.movieTreeStore.set(treeIndex,
-                                    modifiedMovieEntity.toList().enumerate())
+            for col, value in enumerate(modifiedMovieEntity.toList()):
+                self.movieTreeStore.set_value(treeIndex, col, value)
         else:
             self.movieListIO.appendMovieToStore(modifiedMovieEntity,
                                                 modifiedSeriesIndex)
