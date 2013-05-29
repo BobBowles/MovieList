@@ -36,7 +36,7 @@ class MovieEditDialog(object):
 
 
     def __init__(self, parent=None, movie=Movie(), seriesName=None,
-                 movieTreeStore=None):
+                 movieTreeStore=None, mediaDirectory=None):
         """
         Construct and run the dialog
         """
@@ -86,6 +86,8 @@ class MovieEditDialog(object):
             self.genreEntry.set_text(movie.genre)
         if movie.media:
             self.mediaChooserButton.set_filename(movie.media)
+        elif mediaDirectory:
+            self.mediaChooserButton.set_current_folder(mediaDirectory)
 
 
     def run(self):

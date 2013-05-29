@@ -27,6 +27,7 @@ from constants import UI_BUILD_FILE, VERSION
 from constants import CONFIG_FILE
 from constants import FILE_SECTION, CURRENT_FILE
 from constants import UI_SECTION, WINDOW_SIZE, COLUMN_WIDTHS
+from constants import MEDIA_SECTION, MEDIA_DIR
 from Movie import Movie, MovieSeries
 from MovieEditDialog import MovieEditDialog
 from MovieSeriesEditDialog import MovieSeriesEditDialog
@@ -188,10 +189,17 @@ class MovieList:
                     columns[i].connect('notify::width',
                                        self.on_column_width_changed)
 
+            # restore the last used media directory
+            if os.path.exists(self.configuration[MEDIA_SECTION][MEDIA_DIR]):
+                self.__mediaDir = self.configuration[MEDIA_SECTION][MEDIA_DIR]
+            else:
+                self.__mediaDir = None
+
         else:  # first time, create a vanilla configuration
             self.__filename = None
             self.configuration.add_section(FILE_SECTION)
             self.configuration.add_section(UI_SECTION)
+            self.configuration.add_section(MEDIA_SECTION)
             self.saveConfiguration()
 
         # make sure the dirty flag is initialised
@@ -209,11 +217,15 @@ class MovieList:
         self.configuration.set(UI_SECTION, WINDOW_SIZE,
                                ', '.join(str(coord)
                                          for coord in self.window.get_size()))
+
         columnWidths = []
         columns = self.movieTreeView.get_columns()
         for column in columns:
             columnWidths.append(column.get_width())
         self.configuration.set(UI_SECTION, COLUMN_WIDTHS, repr(columnWidths))
+
+        self.configuration.set(MEDIA_SECTION, MEDIA_DIR,
+                               self.__mediaDir if self.__mediaDir else '')
 
         os.makedirs(os.path.dirname(CONFIG_FILE), exist_ok=True)
         with open(CONFIG_FILE, 'w', encoding='utf-8') as configurationFile:
@@ -665,11 +677,15 @@ class MovieList:
                                    else (None, None))
         dialog = MovieEditDialog(parent=self.window,
                                  movie=movie, seriesName=seriesName,
-                                 movieTreeStore=self.movieTreeStore)
+                                 movieTreeStore=self.movieTreeStore,
+                                 mediaDirectory=self.__mediaDir)
         response, editedMovie, editedSeriesName = dialog.run()
         editedSeriesIndex = (self.getSeriesIndexFromName(editedSeriesName)
                              if editedSeriesName != seriesName
                              else seriesIndex)
+        if editedMovie.media:
+            self.__mediaDir = os.path.dirname(editedMovie.media)
+            self.saveConfiguration()
         return response, editedMovie, seriesIndex, editedSeriesIndex
 
 
