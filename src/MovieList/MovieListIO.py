@@ -169,7 +169,8 @@ class MovieListIO(object):
         Recursively construct a list of the movies and series in the rows and
         child rows of the store.
         The base treeIter should point to the tree root, i.e.,
-        movieTreeStore.get_iter_first()
+        movieTreeStore.get_iter_first().
+        The list is sorted by title before returning.
         """
 
         list = []
@@ -186,7 +187,8 @@ class MovieListIO(object):
     Movie.fromList(self.movieList.movieTreeStore[treeIter]))
 
             treeIter = self.movieList.movieTreeStore.iter_next(treeIter)
-        return list
+
+        return sorted(list, key=lambda item:item.title)
 
 
     def load(self):
