@@ -76,7 +76,7 @@ else:
 # now run setup
 setup(
     name='MovieList',
-    version='1.1.1',
+    version='1.2',
     description='A utility to catalogue and play media.',
     long_description=open('README.txt').read(),
     author='Bob Bowles',

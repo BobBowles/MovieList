@@ -35,6 +35,7 @@ from MovieListIO import MovieListIO
 
 # 'constants' for statusbar io
 ADD = 'add'
+COPY = 'copy'
 EDIT = 'edit'
 DELETE = 'delete'
 PLAY = 'play'
@@ -43,6 +44,8 @@ ABORT = 1
 WARN = 2
 DATE = '({})'
 CONTEXT = {ADD: ['Added: {} {}', 'Add aborted', ''],
+           COPY: ['Copied: {} {}', 'Copy aborted',
+                  'Copy: Select a movie to copy'],
            EDIT: ['Edited: {} {}', 'Edit aborted',
                   'Edit: Select a movie to edit'],
            DELETE: ['Deleted: {} {}', 'Delete aborted',
@@ -67,9 +70,9 @@ def modifyMovieTreeStore(method):
         # check for a positive user dialog response and the entity has changed
         if (response == Gtk.ResponseType.OK and
             ((modifiedMovieEntity != originalMovieEntity
-              if modifiedMovieEntity else True) or
+              if modifiedMovieEntity and originalMovieEntity else True) or
              (modifiedSeriesIndex != originalSeriesIndex
-              if modifiedSeriesIndex else True))):
+              if modifiedSeriesIndex and originalSeriesIndex else True))):
 
             # apply the modifications
             method(self, treeIndex,
@@ -197,6 +200,7 @@ class MovieList:
 
         else:  # first time, create a vanilla configuration
             self.__filename = None
+            self.__mediaDir = None
             self.configuration.add_section(FILE_SECTION)
             self.configuration.add_section(UI_SECTION)
             self.configuration.add_section(MEDIA_SECTION)
@@ -464,6 +468,8 @@ class MovieList:
 
         contextId = self.statusbar.get_context_id(PLAY)
         treeIndex, movie = self.getMovieOrSeriesFromSelection(contextId, PLAY)
+        if not movie or isinstance(movie, MovieSeries):
+            return
 
         # ensure media file is not blank
         filename = movie.media
@@ -521,6 +527,37 @@ class MovieList:
                             newMovieEntity, newSeriesIndex)
 
 
+    def on_copyAction_activate(self, widget):
+        """
+        Handler for the movie copy action. Add a duplicate movie entity to the
+        list.
+        """
+
+        # the status bar context
+        contextId = self.statusbar.get_context_id(COPY)
+
+        # select the movie/series to change
+        treeIndex, movieEntity = self.getMovieOrSeriesFromSelection(contextId,
+                                                                    COPY)
+        if not movieEntity:
+            return
+        seriesIndex = None
+        copiedMovieEntity = copiedSeriesIndex = None
+
+        if isinstance(movieEntity, MovieSeries):
+            copiedMovieEntity = MovieSeries.fromList(movieEntity.toList(), [])
+        else:
+            copiedSeriesIndex, copiedSeriesName = \
+                (self.findMovieSeries(treeIndex))
+            copiedMovieEntity = Movie.fromList(movieEntity.toList())
+
+        # update the model and display
+        self.addMovieEntity(contextId, COPY, Gtk.ResponseType.OK,
+                            None,
+                            None, None,
+                            copiedMovieEntity, copiedSeriesIndex)
+
+
     def on_editAction_activate(self, widget):
         """
         Handler for the movie edit action. Edit the selected movie.
@@ -536,6 +573,8 @@ class MovieList:
         # select the movie/series to change
         treeIndex, movieEntity = self.getMovieOrSeriesFromSelection(contextId,
                                                                     EDIT)
+        if not movieEntity:
+            return
         response = seriesIndex = editedSeriesIndex = editedMovieEntity = None
 
         # invoke the appropriate dialog
@@ -591,6 +630,8 @@ class MovieList:
         # get the current movie/series selection
         treeIndex, movieEntity = self.getMovieOrSeriesFromSelection(contextId,
                                                                     DELETE)
+        if not movieEntity:
+            return
 
         # invoke the confirmation dialog
         message = ('Confirm delete of series {}'.format(movieEntity.title)
@@ -620,9 +661,9 @@ class MovieList:
 
         # get the current movie selection
         treeModel, treeIndex = self.getUnderlyingModelSelection()
-        if treeModel is None or treeIndex is None:
+        if treeIndex is None:
             self.displaySelectMovieErrorMessage(contextId, context)
-            return
+            return None, None
         if treeModel[treeIndex][-1]:
             childIter = self.movieTreeStore.iter_children(treeIndex)
             seriesList = self.movieListIO.extractMovieTreeAsList(childIter)
@@ -639,6 +680,8 @@ class MovieList:
         """
 
         parentModel, parentIter = self.movieTreeSelection.get_selected()
+        if not parentIter:
+            return None, None
         while True:
             childModel = parentModel.get_model()
             childIter = parentModel.convert_iter_to_child_iter(parentIter)
@@ -723,8 +766,12 @@ class MovieList:
         """
 
         if originalSeriesIndex == modifiedSeriesIndex:
-            for col, value in enumerate(modifiedMovieEntity.toList()):
-                self.movieTreeStore.set_value(treeIndex, col, value)
+            row = modifiedMovieEntity.toList()
+            for col, value in enumerate(row):
+                if value or (col == len(row) - 1):
+                    self.movieTreeStore.set_value(treeIndex, col, value)
+                else:
+                    self.movieTreeStore.set_value(treeIndex, col, '')
         else:
             self.movieListIO.appendMovieToStore(modifiedMovieEntity,
                                                 modifiedSeriesIndex)

@@ -13,6 +13,12 @@
     <property name="stock_id">gtk-add</property>
     <signal name="activate" handler="on_addAction_activate" swapped="no"/>
   </object>
+  <object class="GtkAction" id="copyAction">
+    <property name="label" translatable="yes">_Copy</property>
+    <property name="tooltip" translatable="yes">Copy a movie or series</property>
+    <property name="stock_id">gtk-copy</property>
+    <signal name="activate" handler="on_copyAction_activate" swapped="no"/>
+  </object>
   <object class="GtkAction" id="deleteAction">
     <property name="label" translatable="yes">_Delete</property>
     <property name="tooltip" translatable="yes">Delete a movie or series</property>
@@ -213,6 +219,15 @@
                       </object>
                     </child>
                     <child>
+                      <object class="GtkImageMenuItem" id="editCopyImageMenuItem">
+                        <property name="related_action">copyAction</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkImageMenuItem" id="editEditImageMenuItem">
                         <property name="related_action">editAction</property>
                         <property name="visible">True</property>
@@ -372,6 +387,20 @@
                 <property name="can_focus">False</property>
                 <property name="related_action">addAction</property>
                 <property name="label" translatable="yes">Add Movie</property>
+                <property name="use_underline">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="copyMovieButton">
+                <property name="related_action">copyAction</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="related_action">copyAction</property>
+                <property name="label" translatable="yes">Copy Movie</property>
                 <property name="use_underline">True</property>
               </object>
               <packing>
