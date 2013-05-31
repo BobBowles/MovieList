@@ -39,6 +39,19 @@ Installation (Linux):
 
     3.  On Ubuntu a desktop launcher is installed, which you should be able to
         find in the Dash and drag to the launcher bar.
+        
+Upgrades
+========
+
+Upgrading does not require removal of the older version. 
+
+However, to avoid compatibility issues with the configuration file, any existing
+configuration should be removed or renamed before running an update for the 
+first time. Any configuration you want to recover can be copied into the new 
+configuration from the saved one after the first run. 
+
+On Linux, the configuration file can be found at 
+~/.config/MovieList/MovieList.cfg
 
 Design Notes and Plans
 ======================
