@@ -31,7 +31,7 @@ class MovieSeriesEditDialog(object):
     """
 
 
-    def __init__(self, parent=None, series=MovieSeries()):
+    def __init__(self, context='Add', parent=None, series=MovieSeries()):
         """
         Construct and run the dialog
         """
@@ -40,14 +40,12 @@ class MovieSeriesEditDialog(object):
         self.builder.add_from_file(DIALOG_BUILD_FILE)
         self.builder.connect_signals(self)
 
-        # get a reference to the main window itself and display the window
+        # get references to widgets we need to use
         self.dialog = self.builder.get_object('movieSeriesEditDialog')
-        self.dialog.set_transient_for(parent)
-
-        # get the dialog editable areas
+        self.dialog.set_title('{} Series'.format(context.capitalize()))
         self.titleEntry = self.builder.get_object('titleEntry')
 
-        # populate the dialog fields
+        self.dialog.set_transient_for(parent)
         self.titleEntry.set_text(series.title)
 
         # retain the list of child movies
@@ -59,7 +57,6 @@ class MovieSeriesEditDialog(object):
         Display the edit dialog and return any changes.
         """
 
-        # self.dialog.show()
         response = self.dialog.run()
         series = None
 

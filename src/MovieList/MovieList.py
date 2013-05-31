@@ -172,6 +172,7 @@ class MovieList:
             # restore the last open file
             if os.path.exists(self.configuration[FILE_SECTION][CURRENT_FILE]):
                 self.__filename = self.configuration[FILE_SECTION][CURRENT_FILE]
+                self.window.set_title(os.path.basename(self.__filename))
             else:
                 self.__filename = None
 
@@ -370,6 +371,7 @@ class MovieList:
 
     def setFileName(self, filename):
         self.__filename = filename
+        self.window.set_title(os.path.basename(self.__filename))
         self.saveConfiguration()
 
 
@@ -501,10 +503,10 @@ class MovieList:
                                    Gtk.ButtonsType.NONE,
                                    'Add a Movie or a Movie Series?',
                                    )
+        dialog.set_title('Choose Add Movie or Series')
         dialog.add_buttons('Movie', MOVIE_RESPONSE,
                            'Movie Series', MOVIE_SERIES_RESPONSE,
                            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
-        dialog.set_decorated(False)
         selectionResponse = dialog.run()
         dialog.destroy()
         if selectionResponse == Gtk.ResponseType.CANCEL:
@@ -514,11 +516,13 @@ class MovieList:
         newMovieEntity = newSeriesIndex = None
         if selectionResponse == MOVIE_SERIES_RESPONSE:
             movieEntity = MovieSeries()
-            response, newMovieEntity = self.editMovieSeriesDialog(movieEntity)
+            response, newMovieEntity = self.editMovieSeriesDialog(ADD,
+                                                                  movieEntity)
         elif selectionResponse == MOVIE_RESPONSE:
             movieEntity = Movie()
             response, newMovieEntity, seriesIndex, newSeriesIndex = \
-                self.editMovieDialog(movieEntity, None)
+                self.editMovieDialog(ADD,
+                                     movieEntity, None)
 
         # update the model and display
         self.addMovieEntity(contextId, ADD, response,
@@ -580,10 +584,10 @@ class MovieList:
         # invoke the appropriate dialog
         if isinstance(movieEntity, MovieSeries):
             response, editedMovieEntity = \
-                self.editMovieSeriesDialog(movieEntity)
+                self.editMovieSeriesDialog(EDIT, movieEntity)
         else:
             response, editedMovieEntity, seriesIndex, editedSeriesIndex = \
-                self.editMovieDialog(movieEntity, treeIndex)
+                self.editMovieDialog(EDIT, movieEntity, treeIndex)
 
         # update the model and display
         self.editMovieEntity(contextId, EDIT, response,
@@ -634,18 +638,23 @@ class MovieList:
             return
 
         # invoke the confirmation dialog
-        message = ('Confirm delete of series {}'.format(movieEntity.title)
-                   if isinstance(movieEntity, MovieSeries)
-                   else
-                   'Confirm delete of movie {} ({})'.format(movieEntity.title,
-                                                            movieEntity.date))
+        message = type = ''
+        if isinstance(movieEntity, MovieSeries):
+            type = 'Series'
+            message = 'Confirm delete of {} {}'.format(type,
+                                                       movieEntity.title)
+        else:
+            type = 'Movie'
+            message = 'Confirm delete of {} {} ({})'.format(type,
+                                                            movieEntity.title,
+                                                            movieEntity.date)
         dialog = Gtk.MessageDialog(self.window,
                                    Gtk.DialogFlags.MODAL,
                                    Gtk.MessageType.WARNING,
                                    Gtk.ButtonsType.OK_CANCEL,
                                    message,
                                    )
-        dialog.set_decorated(False)
+        dialog.set_title('Delete {}'.format(type))
         response = dialog.run()
         dialog.destroy()
 
@@ -704,21 +713,21 @@ class MovieList:
             Gtk.MessageType.ERROR,
             Gtk.ButtonsType.OK,
             CONTEXT[context][WARN].format(context))
-        dialog.set_decorated(False)
         dialog.run()
         dialog.destroy()
         self.statusbar.push(contextId, CONTEXT[context][WARN].format(context))
         return
 
 
-    def editMovieDialog(self, movie, treeIndex):
+    def editMovieDialog(self, context, movie, treeIndex):
         """
         Invoke the dialog, return the edited movie and series information.
         """
 
         seriesIndex, seriesName = (self.findMovieSeries(treeIndex) if treeIndex
                                    else (None, None))
-        dialog = MovieEditDialog(parent=self.window,
+        dialog = MovieEditDialog(context=context,
+                                 parent=self.window,
                                  movie=movie, seriesName=seriesName,
                                  movieTreeStore=self.movieTreeStore,
                                  mediaDirectory=self.__mediaDir)
@@ -732,12 +741,13 @@ class MovieList:
         return response, editedMovie, seriesIndex, editedSeriesIndex
 
 
-    def editMovieSeriesDialog(self, movieSeries):
+    def editMovieSeriesDialog(self, context, movieSeries):
         """
         Invoke the dialog, return the edited series information.
         """
 
-        dialog = MovieSeriesEditDialog(parent=self.window, series=movieSeries)
+        dialog = MovieSeriesEditDialog(context=context,
+                                       parent=self.window, series=movieSeries)
         return dialog.run()
 
 
