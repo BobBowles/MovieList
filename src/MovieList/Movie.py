@@ -64,10 +64,10 @@ class Movie(object):
         The order of parameters in the list is:
         0    title        the name of the movie
         1    date         the year of publication (if known)
-        2    director     the director(s) (;-separated list)
+        2    director     the director(s) (comma-delimited text)
         3    duration     the time the movie runs for (mins)
-        4    stars        the main stars cited (;-delimited list)
-        5    genre        the movie's genre (;-delimited list)
+        4    stars        the main stars cited (comma-delimited text)
+        5    genre        the movie's genre (comma-delimited text)
         6    media        the location of the movie file on the local system
         7    False        only used in the treeStore
         """

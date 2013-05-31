@@ -288,7 +288,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="invisible_char">•</property>
-                <property name="placeholder_text">Movie Director[; ...]</property>
+                <property name="placeholder_text">Movie Director[, ...]</property>
               </object>
               <packing>
                 <property name="left_attach">3</property>
@@ -320,7 +320,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="invisible_char">•</property>
-                <property name="placeholder_text">Actor[; ...]</property>
+                <property name="placeholder_text">Actor[, ...]</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -334,7 +334,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="invisible_char">•</property>
-                <property name="placeholder_text">Genre[; ...]</property>
+                <property name="placeholder_text">Genre[, ...]</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>

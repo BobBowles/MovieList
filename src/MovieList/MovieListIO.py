@@ -236,7 +236,7 @@ class MovieListIO(object):
         inputList = []
         for element in root.getchildren():
             if element.tag == 'movie':
-                inputList.append(self.getMovieFromXml(element, None))
+                inputList.append(self.getMovieFromXml(element))
             elif element.tag == 'series':
                 inputList.append(self.getSeriesFromXml(element))
             else:
@@ -255,12 +255,12 @@ class MovieListIO(object):
         seriesList = []
         movieNodes = series.findall('movie')
         for movie in movieNodes:
-            seriesList.append(self.getMovieFromXml(movie, None))
+            seriesList.append(self.getMovieFromXml(movie))
 
         return MovieSeries(title=seriesTitle, series=seriesList)
 
 
-    def getMovieFromXml(self, movieElement, seriesTitle):
+    def getMovieFromXml(self, movieElement):
         """
         Extract xml data as a Movie object.
         """
@@ -286,7 +286,7 @@ class MovieListIO(object):
     def getDataFromMultipleNodes(self, node, tag):
         """
         Extract the text data from a particular tagged child node type as a
-        semicolon-delimited list.
+        comma-separated list.
         """
 
         dataList = []
@@ -296,7 +296,7 @@ class MovieListIO(object):
                 dataList.append(child.text)
 
         if dataList and dataList[0]:
-            return '; '.join(dataList)
+            return ', '.join(dataList)
         else:
             return None
 
@@ -343,6 +343,10 @@ class MovieListIO(object):
         The assumed format for the csv data lines is as follows:
         title,date,director,duration,genre,stars,other_stuff_can_be_ignored
 
+        The assumed format of lists such as directors, stars, and genres is
+        semicolon-separated (';'). These are converted to comma-separated
+        values before adding to the tree.
+
         NOTE: No attempt is made to preserve information about media or series.
         """
 
@@ -359,11 +363,11 @@ class MovieListIO(object):
                           title=dataList[0],
                           date=(int(dataList[1]) if dataList[1].isnumeric()
                                 else 1900),
-                          director=dataList[2],
+                          director=dataList[2].replace(';', ','),
                           duration=(int(dataList[3]) if dataList[3].isnumeric()
                                     else 0),
-                          genre=dataList[4],
-                          stars=dataList[5],
+                          genre=dataList[4].replace(';', ','),
+                          stars=dataList[5].replace(';', ','),
                           )
             self.movieList.movieTreeStore.append(None, movie.toList())
         fileHandler.close()
