@@ -65,13 +65,14 @@ class MovieEditDialog(object):
         self.dateSpinbutton.set_range(MIN_YEAR, now.year)
 
         # only list series in the seriesComboBox
-        index = 0
+        seriesList = []
         for row in movieTreeStore:
             if row[-1]:
-                self.seriesComboBox.append(None, row[0])
-                if seriesName and row[0] == seriesName:
-                    self.seriesComboBox.set_active(index)
-                index += 1
+                seriesList.append(row[0])
+        for index, series in enumerate(sorted(seriesList)):
+            self.seriesComboBox.append(None, series)
+            if seriesName and series == seriesName:
+                self.seriesComboBox.set_active(index)
 
         # populate the dialog fields
         self.titleEntry.set_text(movie.title)
