@@ -10,4 +10,4 @@ v1.2    2013-05-29  Sort movies on save.
                     Add copy ability.
 v1.2.1  2013-05-31  Convert director, star, and genre lists to comma-separated.
                     Enable windows to be movable.
-                          
+v1.2.2  2013-06-xx  Sort the series selection in the movie editor.                          
