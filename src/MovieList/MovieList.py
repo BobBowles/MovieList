@@ -295,10 +295,20 @@ class MovieList:
         display.
         """
 
+        # for series recursively check visibility of child nodes
         if model[iteration][-1]:
-            return True  # series always visible
+            if model.iter_has_child(iteration):
+                for n in range(model.iter_n_children(iteration)):
+                    child_iter = model.iter_nth_child(iteration, n)
+                    if self.makeMovieVisible(model, child_iter, data):
+                        return True
+            return False
+
+        # when the filter data is empty expose everything
         elif not data.get_text():
             return True
+
+        # apply the filter data
         else:
             filterText = data.get_text().lower()
             nonEmptyRow = False
