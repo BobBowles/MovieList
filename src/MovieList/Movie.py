@@ -122,6 +122,22 @@ class Movie(object):
 
         return self.__dict__ == other.__dict__
 
+    def __gt__(self, other):
+
+        if self.title > other.title:
+            return True
+        elif self.title == other.title:
+            return self.date > other.date
+        return False
+
+    def __lt__(self, other):
+
+        if self.title < other.title:
+            return True
+        elif self.title == other.title:
+            return self.date < other.date
+        return False
+
 
 class MovieSeries(Movie):
     """
