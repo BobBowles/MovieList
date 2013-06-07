@@ -16,6 +16,37 @@
     </movie>
     <series>
         <title>This Is A Series</title>
+        <series>
+            <title>This Is A Nested Series</title>
+            <movie>
+                <title>A Nested Movie</title>
+                <date>2001</date>
+                <director>You</director>
+                <director>Me</director>
+                <duration>10</duration>
+                <star>You</star>
+                <star>Me</star>
+                <star>Us</star>
+                <star>Them</star>
+                <genre>Soap</genre>
+                <genre>Water</genre>
+                <media>File Zero</media>
+            </movie>
+            <movie>
+                <title>A Second Nested Movie</title>
+                <date>2002</date>
+                <director>You</director>
+                <director>Me</director>
+                <duration>10</duration>
+                <star>You</star>
+                <star>Me</star>
+                <star>Us</star>
+                <star>Them</star>
+                <genre>Soap</genre>
+                <genre>Water</genre>
+                <media>File Zero</media>
+            </movie>
+        </series>
         <movie>
             <title>Episode 1</title>
             <date>1999</date>
