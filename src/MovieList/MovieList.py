@@ -32,6 +32,8 @@ from Movie import Movie, MovieSeries
 from MovieEditDialog import MovieEditDialog
 from MovieSeriesEditDialog import MovieSeriesEditDialog
 from MovieListIO import MovieListIO
+from TreeModelHelper import TreeModelHelper
+
 
 # 'constants' for statusbar io
 ADD = 'add'
@@ -116,6 +118,7 @@ class MovieList:
 
         # load the UI elements
         self.initializeUI()
+        self.initializeMovieTreeModelHelper()
 
         # apply custom settings not provided in the glade file
         self.customiseRendering()
@@ -158,6 +161,16 @@ class MovieList:
         self.statusbar = self.builder.get_object('statusbar')
         self.fileSaveAction = self.builder.get_object('fileSaveAction')
         self.window = self.builder.get_object('window')
+
+
+    def initializeMovieTreeModelHelper(self):
+        """
+        Set up the helper object for navigating the MovieTreeView's data model.
+        """
+
+        # model = self.movieTreeView.get_model()
+        self.movieTreeModelHelper = TreeModelHelper(
+                                        model=self.movieTreeView.get_model())
 
 
     def restoreConfiguration(self):
@@ -648,14 +661,14 @@ class MovieList:
             return
 
         # invoke the confirmation dialog
-        message = type = ''
+        message = entityType = ''
         if isinstance(movieEntity, MovieSeries):
-            type = 'Series'
-            message = 'Confirm delete of {} {}'.format(type,
+            entityType = 'Series'
+            message = 'Confirm delete of {} {}'.format(entityType,
                                                        movieEntity.title)
         else:
-            type = 'Movie'
-            message = 'Confirm delete of {} {} ({})'.format(type,
+            entityType = 'Movie'
+            message = 'Confirm delete of {} {} ({})'.format(entityType,
                                                             movieEntity.title,
                                                             movieEntity.date)
         dialog = Gtk.MessageDialog(self.window,
@@ -664,7 +677,7 @@ class MovieList:
                                    Gtk.ButtonsType.OK_CANCEL,
                                    message,
                                    )
-        dialog.set_title('Delete {}'.format(type))
+        dialog.set_title('Delete {}'.format(entityType))
         response = dialog.run()
         dialog.destroy()
 
@@ -679,7 +692,10 @@ class MovieList:
         """
 
         # get the current movie selection
-        treeModel, treeIndex = self.getUnderlyingModelSelection()
+        parentModel, parentIter = self.movieTreeSelection.get_selected()
+
+        treeModel, treeIndex = \
+            self.movieTreeModelHelper.getUnderlyingSelection(parentIter)
         if treeIndex is None:
             self.displaySelectMovieErrorMessage(contextId, context)
             return None, None
@@ -690,25 +706,6 @@ class MovieList:
                                                    seriesList)
         else:
             return treeIndex, Movie.fromList(treeModel[treeIndex])
-
-
-    def getUnderlyingModelSelection(self):
-        """
-        Drill down into the child models of the view to find the base model and
-        iteration of the current selection.
-        """
-
-        parentModel, parentIter = self.movieTreeSelection.get_selected()
-        if not parentIter:
-            return None, None
-        while True:
-            childModel = parentModel.get_model()
-            childIter = parentModel.convert_iter_to_child_iter(parentIter)
-            if isinstance(childModel, Gtk.TreeStore):
-                return childModel, childIter
-            else:
-                parentModel = childModel
-                parentIter = childIter
 
 
     def displaySelectMovieErrorMessage(self, contextId, context):

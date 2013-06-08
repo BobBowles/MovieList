@@ -33,3 +33,5 @@ MANIFEST
 # development files
 src/*.txt
 
+syntax: glob
+.settings/*
