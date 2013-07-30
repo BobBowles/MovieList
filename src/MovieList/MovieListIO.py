@@ -327,10 +327,13 @@ class MovieListIO(object):
         """
         Append a movie series to the movieTreeStore.
 
-        Append the series, then append its movies as its children.
+        Append the series, then append its movies and sub-series as its
+        children.
         """
 
-        seriesIter = self.movieList.movieTreeStore.append(rootIter, series.toList())
+        seriesIter = self.movieList.movieTreeStore.append(rootIter,
+                                                          series.toList())
+
         for movieEntity in series.series:
             if isinstance(movieEntity, MovieSeries):
                 self.appendSeriesToStore(movieEntity, seriesIter)

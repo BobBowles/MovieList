@@ -22,6 +22,7 @@ Created on: 25 Apr 2013
 from gi.repository import Gtk
 from constants import SERIES_DIALOG_BUILD_FILE as DIALOG_BUILD_FILE
 from Movie import MovieSeries
+from MovieSeriesSelector import MovieSeriesSelector
 
 
 
@@ -31,7 +32,8 @@ class MovieSeriesEditDialog(object):
     """
 
 
-    def __init__(self, context='Add', parent=None, series=MovieSeries()):
+    def __init__(self, context='Add', parent=None, series=MovieSeries(),
+                 parentSeriesIndex=None, movieTreeStore=None):
         """
         Construct and run the dialog
         """
@@ -44,6 +46,17 @@ class MovieSeriesEditDialog(object):
         self.dialog = self.builder.get_object('movieSeriesEditDialog')
         self.dialog.set_title('{} Series'.format(context.capitalize()))
         self.titleEntry = self.builder.get_object('titleEntry')
+
+        # create the series selector
+        movieSeriesSelectorSocket = \
+            self.builder.get_object('movieSeriesSelectorSocket')
+        self.movieSeriesSelector = \
+            MovieSeriesSelector(parent=movieSeriesSelectorSocket,
+                                movieTreeStore=movieTreeStore)
+        movieSeriesSelectorSocket.add(self.movieSeriesSelector)
+
+        # set the comboBox's current selection to the current parent series
+        self.movieSeriesSelector.setSelected(parentSeriesIndex)
 
         self.dialog.set_transient_for(parent)
         self.titleEntry.set_text(series.title)
@@ -59,21 +72,24 @@ class MovieSeriesEditDialog(object):
 
         response = self.dialog.run()
         series = None
+        parentSeriesIter = None
 
         # if the ok button was pressed update the movie object
         if response == Gtk.ResponseType.OK:
-            series = MovieSeries(title=self.titleEntry.get_text())
-            series.series = self.seriesChildren
+            series = MovieSeries(title=self.titleEntry.get_text(),
+                                 series=self.seriesChildren)
+            parentSeriesIter = self.movieSeriesSelector.getSelected()
+
         else:
             series = MovieSeries()
 
         self.dialog.destroy()
-        return response, series
+        return response, series, parentSeriesIter
 
 
 
 if __name__ == '__main__':
     window = Gtk.Window()
     app = MovieSeriesEditDialog(parent=window)
-    response, series = app.run()
+    response, series, parentSeriesIndex = app.run()
     print(series)
