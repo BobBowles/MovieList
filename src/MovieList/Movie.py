@@ -127,7 +127,10 @@ class Movie(object):
         if self.title > other.title:
             return True
         elif self.title == other.title:
-            return self.date > other.date
+            if isinstance(other, MovieSeries):
+                return True
+            else:
+                return self.date > other.date
         return False
 
     def __lt__(self, other):
@@ -135,7 +138,10 @@ class Movie(object):
         if self.title < other.title:
             return True
         elif self.title == other.title:
-            return self.date < other.date
+            if isinstance(other, MovieSeries):
+                return False
+            else:
+                return self.date < other.date
         return False
 
 
