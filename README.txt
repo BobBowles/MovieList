@@ -1,7 +1,7 @@
 
-=============
-MovieList 1.3
-=============
+===============
+MovieList 1.3.1
+===============
 
 A utility application to catalogue, sort, filter, and play media files on local 
 disk. The catalogue can be imported using csv text, and it can be maintained by 

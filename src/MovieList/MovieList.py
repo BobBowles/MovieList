@@ -589,35 +589,21 @@ class MovieList:
 
         if not movieEntity:
             return
-#        response = parentSeriesIndex = None
-#        editedSeriesIndex = editedMovieEntity = None
         response = ()
 
         # invoke the appropriate dialog
         if isinstance(movieEntity, MovieSeries):
-#            response, \
-#            editedMovieEntity, \
-#            parentSeriesIndex, \
-#            editedSeriesIndex = \
              response = self.editMovieSeriesDialog(EDIT,
                                                    movieEntity,
                                                    treeIndex,
                                                    parentSeriesIndex)
         else:
-#            response, \
-#            editedMovieEntity, \
-#            parentSeriesIndex, \
-#            editedSeriesIndex = \
              response = self.editMovieDialog(EDIT,
                                              movieEntity,
                                              treeIndex,
                                              parentSeriesIndex)
 
         # update the model and display
-#        self.editMovieEntity(contextId, EDIT, response,
-#                             treeIndex,
-#                             movieEntity, parentSeriesIndex,
-#                             editedMovieEntity, editedSeriesIndex)
         self.editMovieEntity(contextId, EDIT, response[0],
                              treeIndex,
                              movieEntity, parentSeriesIndex,
