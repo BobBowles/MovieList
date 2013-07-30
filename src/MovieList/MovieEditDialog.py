@@ -21,7 +21,8 @@ Created on: 28 Mar 2013
 
 from gi.repository import Gtk
 from constants import MOVIE_DIALOG_BUILD_FILE as DIALOG_BUILD_FILE
-from Movie import Movie
+from Movie import Movie, MovieSeries
+from MovieSeriesSelector import MovieSeriesSelector
 import datetime
 
 MIN_YEAR = 1900
@@ -36,7 +37,8 @@ class MovieEditDialog(object):
 
 
     def __init__(self, context='Add', parent=None, movie=Movie(),
-                 seriesName=None, movieTreeStore=None, mediaDirectory=None):
+                 parentSeriesIndex=None, movieTreeStore=None,
+                 mediaDirectory=None):
         """
         Construct and run the dialog
         """
@@ -58,21 +60,21 @@ class MovieEditDialog(object):
         self.starsEntry = self.builder.get_object('starsEntry')
         self.genreEntry = self.builder.get_object('genreEntry')
         self.mediaChooserButton = self.builder.get_object('mediaChooserButton')
-        self.seriesComboBox = self.builder.get_object('seriesComboBox')
+
+        # create the series selector
+        movieSeriesSelectorSocket = \
+            self.builder.get_object('movieSeriesSelectorSocket')
+        self.movieSeriesSelector = \
+            MovieSeriesSelector(parent=movieSeriesSelectorSocket,
+                                movieTreeStore=movieTreeStore)
+        movieSeriesSelectorSocket.add(self.movieSeriesSelector)
 
         # adjust the date spinbutton range for the current year
         now = datetime.datetime.now()
         self.dateSpinbutton.set_range(MIN_YEAR, now.year)
 
-        # only list series in the seriesComboBox
-        seriesList = []
-        for row in movieTreeStore:
-            if row[-1]:
-                seriesList.append(row[0])
-        for index, series in enumerate(sorted(seriesList)):
-            self.seriesComboBox.append(None, series)
-            if seriesName and series == seriesName:
-                self.seriesComboBox.set_active(index)
+        # set the comboBox's current selection to the current parent series
+        self.movieSeriesSelector.setSelected(parentSeriesIndex)
 
         # populate the dialog fields
         self.titleEntry.set_text(movie.title)
@@ -97,10 +99,9 @@ class MovieEditDialog(object):
         Display the edit dialog and return any changes.
         """
 
-        # self.dialog.show()
         response = self.dialog.run()
         movie = None
-        seriesName = None
+        parentSeriesIter = None
 
         # if the ok button was pressed update the movie object
         if response == Gtk.ResponseType.OK:
@@ -121,21 +122,13 @@ class MovieEditDialog(object):
                           genre=self.genreEntry.get_text(),
                           media=self.mediaChooserButton.get_filename(),
                           )
-            seriesName = self.seriesComboBox.get_active_text()
+            parentSeriesIter = self.movieSeriesSelector.getSelected()
 
         else:
             movie = Movie()
 
         self.dialog.destroy()
-        return response, movie, seriesName
-
-
-    def on_seriesClearButton_clicked(self, widget):
-        """
-        Reset the series name to None.
-        """
-
-        self.seriesComboBox.set_active(-1)
+        return response, movie, parentSeriesIter
 
 
 

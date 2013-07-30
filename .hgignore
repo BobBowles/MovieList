@@ -33,5 +33,11 @@ MANIFEST
 # development files
 src/*.txt
 
-syntax: glob
+# not sure what this is
 .settings/*
+
+# anjuta files
+.anjuta/*
+.anjuta_sym_db.db
+*.anjuta
+

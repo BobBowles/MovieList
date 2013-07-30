@@ -32,7 +32,7 @@ from Movie import Movie, MovieSeries
 from MovieEditDialog import MovieEditDialog
 from MovieSeriesEditDialog import MovieSeriesEditDialog
 from MovieListIO import MovieListIO
-from TreeModelHelper import TreeModelHelper
+from getUnderlyingSelection import getChildModelSelection
 
 
 # 'constants' for statusbar io
@@ -118,7 +118,6 @@ class MovieList:
 
         # load the UI elements
         self.initializeUI()
-        self.initializeMovieTreeModelHelper()
 
         # apply custom settings not provided in the glade file
         self.customiseRendering()
@@ -161,16 +160,6 @@ class MovieList:
         self.statusbar = self.builder.get_object('statusbar')
         self.fileSaveAction = self.builder.get_object('fileSaveAction')
         self.window = self.builder.get_object('window')
-
-
-    def initializeMovieTreeModelHelper(self):
-        """
-        Set up the helper object for navigating the MovieTreeView's data model.
-        """
-
-        # model = self.movieTreeView.get_model()
-        self.movieTreeModelHelper = TreeModelHelper(
-                                        model=self.movieTreeView.get_model())
 
 
     def restoreConfiguration(self):
@@ -308,18 +297,18 @@ class MovieList:
         display.
         """
 
+        # when the filter data is empty expose everything
+        if not data.get_text():
+            return True
+
         # for series recursively check visibility of child nodes
-        if model[iteration][-1]:
+        elif model[iteration][-1]:
             if model.iter_has_child(iteration):
                 for n in range(model.iter_n_children(iteration)):
                     child_iter = model.iter_nth_child(iteration, n)
                     if self.makeMovieVisible(model, child_iter, data):
                         return True
             return False
-
-        # when the filter data is empty expose everything
-        elif not data.get_text():
-            return True
 
         # apply the filter data
         else:
@@ -535,23 +524,20 @@ class MovieList:
         if selectionResponse == Gtk.ResponseType.CANCEL:
             return
 
-        response = movieEntity = seriesIndex = None
-        newMovieEntity = newSeriesIndex = None
+        movieEntity = None
+        response = ()
         if selectionResponse == MOVIE_SERIES_RESPONSE:
             movieEntity = MovieSeries()
-            response, newMovieEntity = self.editMovieSeriesDialog(ADD,
-                                                                  movieEntity)
+            response = self.editMovieSeriesDialog(ADD, movieEntity, None, None)
         elif selectionResponse == MOVIE_RESPONSE:
             movieEntity = Movie()
-            response, newMovieEntity, seriesIndex, newSeriesIndex = \
-                self.editMovieDialog(ADD,
-                                     movieEntity, None)
+            response = self.editMovieDialog(ADD, movieEntity, None, None)
 
         # update the model and display
-        self.addMovieEntity(contextId, ADD, response,
+        self.addMovieEntity(contextId, ADD, response[0],
                             None,
-                            movieEntity, seriesIndex,
-                            newMovieEntity, newSeriesIndex)
+                            movieEntity, None,
+                            response[1], response[2])
 
 
     def on_copyAction_activate(self, widget):
@@ -574,8 +560,7 @@ class MovieList:
         if isinstance(movieEntity, MovieSeries):
             copiedMovieEntity = MovieSeries.fromList(movieEntity.toList(), [])
         else:
-            copiedSeriesIndex, copiedSeriesName = \
-                (self.findMovieSeries(treeIndex))
+            copiedSeriesIndex = self.findParentMovieSeries(treeIndex)
             copiedMovieEntity = Movie.fromList(movieEntity.toList())
 
         # update the model and display
@@ -600,48 +585,52 @@ class MovieList:
         # select the movie/series to change
         treeIndex, movieEntity = self.getMovieOrSeriesFromSelection(contextId,
                                                                     EDIT)
+        parentSeriesIndex = self.findParentMovieSeries(treeIndex)
+
         if not movieEntity:
             return
-        response = seriesIndex = editedSeriesIndex = editedMovieEntity = None
+#        response = parentSeriesIndex = None
+#        editedSeriesIndex = editedMovieEntity = None
+        response = ()
 
         # invoke the appropriate dialog
         if isinstance(movieEntity, MovieSeries):
-            response, editedMovieEntity = \
-                self.editMovieSeriesDialog(EDIT, movieEntity)
+#            response, \
+#            editedMovieEntity, \
+#            parentSeriesIndex, \
+#            editedSeriesIndex = \
+             response = self.editMovieSeriesDialog(EDIT,
+                                                   movieEntity,
+                                                   treeIndex,
+                                                   parentSeriesIndex)
         else:
-            response, editedMovieEntity, seriesIndex, editedSeriesIndex = \
-                self.editMovieDialog(EDIT, movieEntity, treeIndex)
+#            response, \
+#            editedMovieEntity, \
+#            parentSeriesIndex, \
+#            editedSeriesIndex = \
+             response = self.editMovieDialog(EDIT,
+                                             movieEntity,
+                                             treeIndex,
+                                             parentSeriesIndex)
 
         # update the model and display
-        self.editMovieEntity(contextId, EDIT, response,
+#        self.editMovieEntity(contextId, EDIT, response,
+#                             treeIndex,
+#                             movieEntity, parentSeriesIndex,
+#                             editedMovieEntity, editedSeriesIndex)
+        self.editMovieEntity(contextId, EDIT, response[0],
                              treeIndex,
-                             movieEntity, seriesIndex,
-                             editedMovieEntity, editedSeriesIndex)
+                             movieEntity, parentSeriesIndex,
+                             response[1], response[2])
 
 
-    def findMovieSeries(self, movieIndex):
+    def findParentMovieSeries(self, childMovieEntityIndex):
         """
-        Get the details of the series a movie belongs to using its tree index.
-        """
-
-        seriesIndex = self.movieTreeStore.iter_parent(movieIndex)
-        seriesTitle = (self.movieTreeStore[seriesIndex][0]
-                       if seriesIndex else None)
-        return seriesIndex, seriesTitle
-
-
-    def getSeriesIndexFromName(self, seriesTitle):
-        """
-        Obtain the treeStore pointer for the series from the name of the series.
+        Get the treeIter of the parent series of a movie or series.
         """
 
-        treeIter = self.movieTreeStore.get_iter_first()
-        while treeIter:
-            if (self.movieTreeStore[treeIter][-1] and
-                seriesTitle == self.movieTreeStore[treeIter][0]):
-                return treeIter
-            treeIter = self.movieTreeStore.iter_next(treeIter)
-        treeIter = None
+        return (self.movieTreeStore.iter_parent(childMovieEntityIndex)
+                if childMovieEntityIndex else None)
 
 
     def on_deleteAction_activate(self, widget):
@@ -694,13 +683,13 @@ class MovieList:
         # get the current movie selection
         parentModel, parentIter = self.movieTreeSelection.get_selected()
 
-        treeModel, treeIndex = \
-            self.movieTreeModelHelper.getUnderlyingSelection(parentIter)
+        treeModel = self.movieTreeStore
+        treeIndex = getChildModelSelection(parentModel, parentIter)
         if treeIndex is None:
             self.displaySelectMovieErrorMessage(contextId, context)
             return None, None
         if treeModel[treeIndex][-1]:
-            childIter = self.movieTreeStore.iter_children(treeIndex)
+            childIter = treeModel.iter_children(treeIndex)
             seriesList = self.movieListIO.extractMovieTreeAsList(childIter)
             return treeIndex, MovieSeries.fromList(treeModel[treeIndex],
                                                    seriesList)
@@ -726,36 +715,37 @@ class MovieList:
         return
 
 
-    def editMovieDialog(self, context, movie, treeIndex):
+    def editMovieDialog(self, context, movie, treeIndex, parentSeriesIndex):
         """
         Invoke the dialog, return the edited movie and series information.
         """
 
-        seriesIndex, seriesName = (self.findMovieSeries(treeIndex) if treeIndex
-                                   else (None, None))
         dialog = MovieEditDialog(context=context,
                                  parent=self.window,
-                                 movie=movie, seriesName=seriesName,
+                                 movie=movie,
+                                 parentSeriesIndex=parentSeriesIndex,
                                  movieTreeStore=self.movieTreeStore,
                                  mediaDirectory=self.__mediaDir)
-        response, editedMovie, editedSeriesName = dialog.run()
-        editedSeriesIndex = (self.getSeriesIndexFromName(editedSeriesName)
-                             if editedSeriesName != seriesName
-                             else seriesIndex)
+        response, editedMovie, editedSeriesIndex = dialog.run()
         if editedMovie.media:
             self.__mediaDir = os.path.dirname(editedMovie.media)
             self.saveConfiguration()
-        return response, editedMovie, seriesIndex, editedSeriesIndex
+        return response, editedMovie, editedSeriesIndex
 
 
-    def editMovieSeriesDialog(self, context, movieSeries):
+    def editMovieSeriesDialog(self, context, movieSeries, treeIndex,
+                              parentSeriesIndex):
         """
         Invoke the dialog, return the edited series information.
         """
 
         dialog = MovieSeriesEditDialog(context=context,
-                                       parent=self.window, series=movieSeries)
-        return dialog.run()
+                                       parent=self.window,
+                                       series=movieSeries,
+                                       parentSeriesIndex=parentSeriesIndex,
+                                       movieTreeStore=self.movieTreeStore)
+        response, editedSeries, editedSeriesIndex = dialog.run()
+        return response, editedSeries, editedSeriesIndex
 
 
     @modifyMovieTreeStore
@@ -766,8 +756,14 @@ class MovieList:
         Add a movie entity to the movieTreeStore.
         """
 
-        self.movieListIO.appendMovieToStore(modifiedMovieEntity,
-                                            modifiedSeriesIndex)
+        if isinstance(modifiedMovieEntity, MovieSeries):
+            print('Adding Series {} to parent series {}'.format(modifiedMovieEntity, modifiedSeriesIndex))
+            self.movieListIO.appendSeriesToStore(modifiedMovieEntity,
+                                                 modifiedSeriesIndex)
+        else:
+            print('Adding Movie {}'.format(modifiedMovieEntity))
+            self.movieListIO.appendMovieToStore(modifiedMovieEntity,
+                                                modifiedSeriesIndex)
 
 
     @modifyMovieTreeStore
@@ -790,8 +786,17 @@ class MovieList:
                 else:
                     self.movieTreeStore.set_value(treeIndex, col, '')
         else:
-            self.movieListIO.appendMovieToStore(modifiedMovieEntity,
-                                                modifiedSeriesIndex)
+            if isinstance(modifiedMovieEntity, MovieSeries):
+                self.movieListIO.appendSeriesToStore(modifiedMovieEntity,
+                                                     modifiedSeriesIndex)
+                # TODO: Remove old children
+                while self.movieTreeStore.has_children(treeIndex):
+                    childIndex = self.movieTreeStore.iter_children()
+                    self.movieTreeStore.delete(childIndex)
+
+            else:
+                self.movieListIO.appendMovieToStore(modifiedMovieEntity,
+                                                    modifiedSeriesIndex)
             self.movieTreeStore.remove(treeIndex)
 
 
@@ -818,7 +823,6 @@ class MovieList:
         """
 
         childIter = self.movieTreeStore.iter_children(seriesIter)
-        # moviesToAdd = []
         while childIter:
             movie = Movie.fromList(self.movieTreeStore[childIter])
             self.movieTreeStore.remove(childIter)
