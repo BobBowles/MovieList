@@ -1,6 +1,6 @@
 
 =============
-MovieList 1.1
+MovieList 1.3
 =============
 
 A utility application to catalogue, sort, filter, and play media files on local 
@@ -8,16 +8,18 @@ disk. The catalogue can be imported using csv text, and it can be maintained by
 adding, editing, and deleting records.
 
 In addition to flat lists of media, support is provided to group the media into 
-'series' in a shallow tree structure. 
+'series' in an arbitrarily deep tree structure. 
 
 Installation
 ============
 
-For Version 1.1 the only supported platform is Linux. It *should* work with Mac, 
-but I do not have a Mac available for verifying the port. The port to Windows 
-is not possible at present (May 2013) because the Python-gi libraries are not 
-available for that platform (it *may* be possible to back-port to Python 2.7 and 
-use PyGTK instead). 
+For Versions up to 1.3 the only supported platform is Linux. It *should* work 
+with Mac, but I do not have a Mac available for verifying the port. 
+
+The port to Windows is not possible at present (July 2013) because the Python-gi 
+libraries are not available for that platform (it *may* be possible to back-port 
+to Python 2.7 and use PyGTK instead - I have not tried it and don't plan to 
+anytime soon). 
 
 System Requirements:
 --------------------
@@ -32,7 +34,7 @@ Installation (Linux):
 
     1.  Unzip the tar.gz somewhere.
 
-    2.  In a console window navigate to the UXBgtk-0.9 directory and run the
+    2.  In a console window navigate to the MovieList-1.3 directory and run the
         following command as root (on Ubuntu/Debian use sudo):
 
             ``[sudo] python3 setup.py install``
@@ -56,16 +58,17 @@ On Linux, the configuration file can be found at
 Design Notes and Plans
 ======================
 
-MediaList allows storage of data in two formats, a Python 'pickle' file, or an 
-xml file. The pickle has some advantages for a large datadase, but the xml 
+MovieList allows storage of data in two formats, a Python 'pickle' file, or an 
+xml file. The pickle has some advantages for a large database, but the xml 
 version makes it easier to transport data between other packages and manually 
-edit the data when required.
+edit the data when required. Xml is also easy to use to generate printable 
+output - this is planned for a later version.
 
 Rather than use Python's own sax and dom parsers, the xml implementation is 
 based on element trees, using lxml.
 
 The playing of the media is delegated to VLC Media Player, which, of course, is 
-assumed to be installed. A future version of MediaList may be able to choose the 
+assumed to be installed. A future version of MovieList may be able to choose the 
 media player to use.
 
 A simple import from csv text is available to facilitate creating a new file.
