@@ -25,7 +25,7 @@ one place for ease of maintenance.
 
 import os
 
-VERSION = '1.3.1'
+VERSION = '1.4'
 
 # define the resource paths for the ui
 UI_BUILD_FILE = os.path.join(os.getcwd(), 'MovieList.glade')
@@ -33,6 +33,9 @@ UI_CSS_FILE = os.path.join(os.getcwd(), 'MovieList.css')
 MOVIE_DIALOG_BUILD_FILE = os.path.join(os.getcwd(), 'MovieEditDialog.glade')
 SERIES_DIALOG_BUILD_FILE = os.path.join(os.getcwd(),
                                         'MovieSeriesEditDialog.glade')
+
+# xsl stylesheet for html transformation
+XSL_HTML_STYLE_DOC = os.path.join(os.getcwd(), 'xml', 'MovieList2html.xsl')
 
 # configuration file parameters
 CONFIG_FILE = os.path.expanduser('~/.config/MovieList/MovieList.cfg')

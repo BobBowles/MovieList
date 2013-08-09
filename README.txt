@@ -1,7 +1,7 @@
 
-===============
-MovieList 1.3.1
-===============
+=============
+MovieList 1.4
+=============
 
 A utility application to catalogue, sort, filter, and play media files on local 
 disk. The catalogue can be imported using csv text, and it can be maintained by 
@@ -10,10 +10,12 @@ adding, editing, and deleting records.
 In addition to flat lists of media, support is provided to group the media into 
 'series' in an arbitrarily deep tree structure. 
 
+The latest addition for v1.4 is the ability to print out a list of the media.
+
 Installation
 ============
 
-For Versions up to 1.3 the only supported platform is Linux. It *should* work 
+For Versions up to 1.4 the only supported platform is Linux. It *should* work 
 with Mac, but I do not have a Mac available for verifying the port. 
 
 The port to Windows is not possible at present (July 2013) because the Python-gi 
@@ -28,6 +30,8 @@ System Requirements:
     *   Gtk
     *   Python Gtk+ introspection bindings 3.4.2
     *   lxml >3.0 (and supporting libraries)
+    *   weasyprint >0.2 (and supporting libraries)
+    *   cairo
 
 Installation (Linux):
 ---------------------
@@ -52,7 +56,7 @@ configuration should be removed or renamed before running an update for the
 first time. Any configuration you want to recover can be copied into the new 
 configuration from the saved one after the first run. 
 
-On Linux, the configuration file can be found at 
+On Linux, the user's configuration file can be found at 
 ~/.config/MovieList/MovieList.cfg
 
 Design Notes and Plans
@@ -61,11 +65,17 @@ Design Notes and Plans
 MovieList allows storage of data in two formats, a Python 'pickle' file, or an 
 xml file. The pickle has some advantages for a large database, but the xml 
 version makes it easier to transport data between other packages and manually 
-edit the data when required. Xml is also easy to use to generate printable 
-output - this is planned for a later version.
+edit the data when required. 
 
 Rather than use Python's own sax and dom parsers, the xml implementation is 
 based on element trees, using lxml.
+
+To print the movie data, the lxml element tree model of the data is used to 
+generate html via an xslt transform, which is further transformed to a pdf using 
+weasyprint. In principle the weasyprint document can be used directly, but I 
+found problems with the underlying c wrappers, so the pdf is exported as a 
+temporary file, and read back in using Poppler for rendering to the cairo 
+context provided by the printer interface. 
 
 The playing of the media is delegated to VLC Media Player, which, of course, is 
 assumed to be installed. A future version of MovieList may be able to choose the 
