@@ -471,6 +471,16 @@ class MovieList:
         self.on_window_destroy(widget)
 
 
+    def on_filePrintAction_activate(self, widget):
+        """
+        Handler for the file print action.
+
+        This implementation delegates printing to the MovieListIO object.
+        """
+
+        self.movieListIO.printXml()
+
+
     # Edit menu, toolbar and context actions
 
     def on_playAction_activate(self, widget):
@@ -493,7 +503,7 @@ class MovieList:
 
         # play the media
         # TODO: VLC  Media Player on *nix is assumed here
-        system = subprocess.call('vlc "{}"'.format(filename), shell=True)
+        system = subprocess.Popen('vlc "{}"'.format(filename), shell=True)
         self.statusbar.push(contextId, CONTEXT[PLAY][OK].format(filename))
 
 

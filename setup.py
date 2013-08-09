@@ -76,13 +76,13 @@ else:
 # now run setup
 setup(
     name='MovieList',
-    version='1.3.1',
+    version='1.4',
     description='A utility to catalogue and play media.',
     long_description=open('README.txt').read(),
     author='Bob Bowles',
     author_email='bobjohnbowles@gmail.com',
     url='http://pypi.python.org/pypi/MovieList/',
-    license='GNU General Public License v3 (GPLv3)', # TODO belt-n-braces??
+    license='GNU General Public License v3 (GPLv3)',  # TODO: belt-n-braces??
     keywords=["Movie", "Media", "Catalog"],
     classifiers=[
         "Programming Language :: Python",
@@ -91,7 +91,7 @@ setup(
         "Environment :: Other Environment",
         "Intended Audience :: End Users/Desktop",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-        "Operating System :: POSIX :: Linux", # so far only tested on Linux
+        "Operating System :: POSIX :: Linux",  # TODO: only tested on Linux
         "Topic :: Desktop Environment",
         "Topic :: Games/Entertainment",
         "Topic :: Multimedia",
@@ -99,7 +99,12 @@ setup(
         ],
     package_dir={'': packageDir},
     packages=['MovieList', ],
-    requires=['gi (>=3.4.2)', 'lxml (>3.0)'], # TODO needs Python >3.3
+    requires=[  # TODO: needs Python >3.3
+              'gi (>=3.4.2)',
+              'lxml (>3.0)',
+              'weasyprint (>0.2)',
+              'cairo',
+              ],
     package_data=packageData,
     data_files=dataFiles,
 )
