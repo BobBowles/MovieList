@@ -21,12 +21,10 @@ Created on: 1 Apr 2013
 
 import io
 import tempfile
-from gi.repository import Gtk, WebKit # TODO: experiment
-# from gi.repository import Gtk, Poppler # TODO: experiment - bugs with weasyprint
+from gi.repository import Gtk, WebKit
 import pickle
 from lxml import etree
 from Movie import Movie, MovieSeries
-# from weasyprint import HTML
 from constants import XSL_HTML_STYLE_DOC
 
 
@@ -135,79 +133,6 @@ class MovieListIO(object):
         webFrame = webView.get_main_frame()
         webFrame.print_full(Gtk.PrintOperation(),
                             Gtk.PrintOperationAction.PRINT_DIALOG)
-
-
-#    def printXml(self):
-#        """
-#        Use the default system printer dialog to print the contents of the
-#        movie list.
-#
-#        This was the second attempt at printing (see the commented version using
-#        WebKit for the first one). Here we use lxml, weasyprint and poppler
-#        together to transform the data from the Gtk.TreeStore to an xml etree,
-#        to html, to a pdf, and finally to drawing instructions in cairo.
-#
-#        While a bit messy because of all the different transformations, and the
-#        interaction between weasyprint and poppler via a temporary file, this
-#        method is very quick in practice (at least compared with WebKit).
-#
-## NB There seem to be show-stopping issues with weasyprint apparently 
-#     interfering in the Gtk introspection process. Which is why this is not 
-#     being used.
-#        """
-#
-#        # use lxml to make the xml document tree as in saveXml()...
-#        outputList = self.makeOutputList()
-#        xmlTree = self.makeElementTree(outputList)
-#        # ...and transform the document tree to html
-#        htmlTree = htmlTransform(xmlTree)
-#
-#        # TODO: need to resolve gi problems with both weasyprint and poppler
-#        # use weasyprint to transform html to pdf file...
-#        with tempfile.NamedTemporaryFile() as pdfFile:
-#            HTML(tree=htmlTree).write_pdf(pdfFile)
-#            # ... and read the file with Poppler to make a document
-#            self.pdfDocument = Poppler.Document.new_from_file('file://' +
-#                                                              pdfFile.name,
-#                                                              None)
-##        # use weasyprint to transform html to pdf document
-##        self.pdfDocument = HTML(tree=htmlTree).render()
-#
-#        printDialog = Gtk.PrintOperation()
-##        printDialog.connect('begin-print', self.on_printDialog_begin_print)
-#        printDialog.connect('draw-page', self.on_printDialog_draw_page)
-#        printDialog.set_job_name(self.movieList.getFileName())
-#        # TODO: streamline pdf handling weasyprint vs. poppler
-#        printDialog.set_n_pages(self.pdfDocument.get_n_pages())  # poppler
-##        printDialog.set_n_pages(len(self.pdfDocument.pages))  # weasyprint
-#        printDialog.run(Gtk.PrintOperationAction.PRINT_DIALOG,
-#                        parent=self.movieList.window)
-
-
-#    def on_printDialog_begin_print(self, printOperation, context):
-#        """
-#        Handler for the begin-print signal from the printDialog.
-#
-#        Commented out, retained for documentation purposes.
-#        """
-#
-# #        printDialog.set_n_pages(self.pdfDocument.get_n_pages()) # poppler
-# #        printDialog.set_n_pages(len(self.pdfDocument.pages)) # weasyprint
-#        pass
-
-
-#    def on_printDialog_draw_page(self, printOperation, context, pageNo):
-#        """
-#        Handler for the draw-page signal from the printDialog.
-#        """
-#
-#        cr = context.get_cairo_context()
-#        # TODO: Poppler document methods
-#        page = self.pdfDocument.get_page(pageNo)
-#        page.render_for_printing(cr)
-##        # TODO: weasyprint document methods
-##        page = self.pdfDocument.pages[pageNo]
-##        page.paint(cr)
 
 
     def makeElementTree(self, outputList):

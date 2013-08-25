@@ -28,10 +28,10 @@ System Requirements:
 
     *   Python 3
     *   Gtk
-    *   Python Gtk+ introspection bindings 3.4.2
+    *   Python Gtk+ introspection bindings 3.4.2 (part of gi)
     *   lxml >3.0 (and supporting libraries)
-    *   weasyprint >0.2 (and supporting libraries)
-    *   cairo
+    *   cairo (part of gi)
+    *   WebKit (part of gi)
 
 Installation (Linux):
 ---------------------
@@ -71,11 +71,11 @@ Rather than use Python's own sax and dom parsers, the xml implementation is
 based on element trees, using lxml.
 
 To print the movie data, the lxml element tree model of the data is used to 
-generate html via an xslt transform, which is further transformed to a pdf using 
-weasyprint. In principle the weasyprint document can be used directly, but I 
-found problems with the underlying c wrappers, so the pdf is exported as a 
-temporary file, and read back in using Poppler for rendering to the cairo 
-context provided by the printer interface. 
+generate html via an xslt transform. The html is fed into a WebView for parsing 
+and rendering, and to administer the print interface. 
+
+(It should be possible to use weasyprint to do the parsing and rendering, but
+there seem to be incompatibilities between weasyprint and gnome introspection).
 
 The playing of the media is delegated to VLC Media Player, which, of course, is 
 assumed to be installed. A future version of MovieList may be able to choose the 
