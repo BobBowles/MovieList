@@ -953,5 +953,12 @@ class MovieList:
 
 
 
-app = MovieList()
-Gtk.main()
+def main():
+    
+    app = MovieList()
+    Gtk.main()
+        
+        
+if __name__ == "__main__":    
+    main()
+
