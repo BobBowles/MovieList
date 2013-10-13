@@ -25,8 +25,6 @@ one place for ease of maintenance.
 
 import os
 
-VERSION = '1.4'
-
 # define the resource paths for the ui
 UI_BUILD_FILE = os.path.join(os.getcwd(), 'MovieList.glade')
 UI_CSS_FILE = os.path.join(os.getcwd(), 'MovieList.css')

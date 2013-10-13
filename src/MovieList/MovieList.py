@@ -20,10 +20,12 @@ Created on: 24 Mar 2013
 @author: Bob Bowles <bobjohnbowles@gmail.com>
 """
 
+from __init__ import __version__
+
 import os, subprocess
 from gi.repository import Gtk, Gdk
 from configparser import SafeConfigParser
-from constants import UI_BUILD_FILE, VERSION
+from constants import UI_BUILD_FILE
 from constants import CONFIG_FILE
 from constants import FILE_SECTION, CURRENT_FILE
 from constants import UI_SECTION, WINDOW_SIZE, COLUMN_WIDTHS
@@ -858,7 +860,7 @@ class MovieList:
 
         dialog = Gtk.AboutDialog()
         dialog.set_program_name('Movie List')
-        dialog.set_version(VERSION)
+        dialog.set_version(__version__)
         dialog.set_copyright('(c) Bob Bowles')
         dialog.set_comments("""
         A simple app to facilitate browsing lists of movies or videos.
