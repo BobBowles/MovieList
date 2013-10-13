@@ -16,4 +16,7 @@ v1.3.1  2013-07-30  BUGFIX: Correct date handling in movie sort.
                     Clean out commented code.   
 v1.4    2013-08-09  Add file print. This adds dependency on cairo and WebKit.
                     Use subprocess.Popen instead of subprocess.call to launch 
-                    media playback.                       
+                    media playback. 
+v1.4.1  2013-10-13  Encapsulate references to version in accordance with PEP 8.
+                    
+                                         

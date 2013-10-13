@@ -41,6 +41,11 @@ fileList = []
 packageDir = 'src'
 packageRoot = os.path.join(packageDir, 'MovieList')
 
+# get a reference to the version number from the package being built
+import sys
+sys.path.insert(0, packageDir)
+from MovieList import __version__
+
 imageRoot = 'images'
 for file in os.listdir(os.path.join(packageRoot, imageRoot)):
     fileList.append(os.path.join(imageRoot, file))
@@ -76,7 +81,7 @@ else:
 # now run setup
 setup(
     name='MovieList',
-    version='1.4',
+    version=__version__,
     description='A utility to catalogue and play media.',
     long_description=open('README.txt').read(),
     author='Bob Bowles',
