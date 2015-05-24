@@ -38,13 +38,13 @@ Installation (Linux):
 
     1.  Unzip the tar.gz somewhere.
 
-    2.  In a console window navigate to the MovieList-1.3 directory and run the
-        following command as root (on Ubuntu/Debian use sudo):
+    2.  In a console window navigate to the MovieList-1.4.x directory and run 
+        the following command as root (on Ubuntu/Debian use sudo):
 
             ``[sudo] python3 setup.py install``
 
-    3.  On Ubuntu a desktop launcher is installed, which you should be able to
-        find in the Dash and drag to the launcher bar.
+    3.  On Linux a desktop launcher is installed, which you should be able to
+        find and use in your desktop (tested on Ubuntu/Unity and Debian/Xfce).
         
 Upgrades
 ========

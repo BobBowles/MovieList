@@ -20,8 +20,7 @@ Created on: 9 Jun 2013
 """
 
 from gi.repository import Gtk
-from getUnderlyingSelection import getChildModelSelection
-from getUnderlyingSelection import getParentModelSelection
+from selectionMethods import getChildModelSelection
 
 
 
