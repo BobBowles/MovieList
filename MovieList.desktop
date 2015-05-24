@@ -7,6 +7,6 @@ Exec=sh -c "cd /usr/local/lib/python3.2/dist-packages/MovieList/;/usr/bin/python
 Icon=/usr/local/lib/python3.2/dist-packages/MovieList/images/MovieList.png
 Terminal=false
 Type=Application
-Categories=Utility;Office;
+Categories=Utility;AudioVideo;
 
 Name[en_GB]=Movie List
