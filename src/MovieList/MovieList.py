@@ -30,11 +30,11 @@ from constants import CONFIG_FILE
 from constants import FILE_SECTION, CURRENT_FILE
 from constants import UI_SECTION, WINDOW_SIZE, COLUMN_WIDTHS
 from constants import MEDIA_SECTION, MEDIA_DIR
+from selectionMethods import getChildModelSelection
 from Movie import Movie, MovieSeries
 from MovieEditDialog import MovieEditDialog
 from MovieSeriesEditDialog import MovieSeriesEditDialog
 from MovieListIO import MovieListIO
-from getUnderlyingSelection import getChildModelSelection
 
 
 # 'constants' for statusbar io

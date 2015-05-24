@@ -64,19 +64,25 @@ fileList.sort()
 packageData = {'MovieList': fileList}
 
 # detect Ubuntu/Unity to decide what to do with the launcher
-from subprocess import Popen, PIPE
 if os.name == 'posix':
-    pipe = Popen('ps aux | grep unity', shell=True, stdout=PIPE).stdout
 
-    # now scan the output for some unity tell-tale
-    if  'unity-panel-service' in str(pipe.read()):
-        print('Yay! Unity detected! Adding desktop launcher')
-        dataFiles.append((os.path.join(targetLocaleRoot, 'applications'),
-                          ['MovieList.desktop']))
-    else:
-        print('No Unity detected')
-else:
-     print('Not posix')
+    print('Linux detected! Adding desktop launcher')
+    dataFiles.append((os.path.join(targetLocaleRoot, 'applications'),
+                      ['MovieList.desktop']))
+
+# # legacy - before testing in Debian
+#     from subprocess import Popen, PIPE
+#     pipe = Popen('ps aux | grep unity', shell=True, stdout=PIPE).stdout
+#
+#     # now scan the output for some unity tell-tale
+#     if  'unity-panel-service' in str(pipe.read()):
+#         print('Yay! Unity detected! Adding desktop launcher')
+#         dataFiles.append((os.path.join(targetLocaleRoot, 'applications'),
+#                           ['MovieList.desktop']))
+#     else:
+#         print('No Unity detected')
+# else:
+#      print('Not posix')
 
 # now run setup
 setup(
