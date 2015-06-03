@@ -22,7 +22,7 @@ Created on: 24 Mar 2013
 
 from __init__ import __version__
 
-import os, subprocess
+import os, subprocess, errno
 from gi.repository import Gtk, Gdk
 from configparser import SafeConfigParser
 from constants import UI_BUILD_FILE
@@ -236,7 +236,13 @@ class MovieList:
         self.configuration.set(MEDIA_SECTION, MEDIA_DIR,
                                self.__mediaDir if self.__mediaDir else '')
 
-        os.makedirs(os.path.dirname(CONFIG_FILE), exist_ok=True)
+        # FIXME: Issue13498 workaround behaviour of os.makedirs in Python3.2
+        try:
+            os.makedirs(os.path.dirname(CONFIG_FILE), exist_ok=True)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+
         with open(CONFIG_FILE, 'w', encoding='utf-8') as configurationFile:
             self.configuration.write(configurationFile)
 
