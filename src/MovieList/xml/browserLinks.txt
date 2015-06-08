@@ -9,3 +9,6 @@ http://www.imdb.com/title/tt4171362/?ref_=fn_ft_tt_4
 
 # lookup 'The Battle Of The Five Armies' on IMDB
 http://www.imdb.com/title/tt2310332/?ref_=fn_ft_tt_1
+
+# lookup 'The Desolation Of Smaug' on IMDB
+http://www.imdb.com/title/tt1170358/?ref_=fn_al_tt_5

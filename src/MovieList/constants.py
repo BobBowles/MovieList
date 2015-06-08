@@ -31,6 +31,12 @@ UI_CSS_FILE = os.path.join(os.getcwd(), 'MovieList.css')
 MOVIE_DIALOG_BUILD_FILE = os.path.join(os.getcwd(), 'MovieEditDialog.glade')
 SERIES_DIALOG_BUILD_FILE = os.path.join(os.getcwd(),
                                         'MovieSeriesEditDialog.glade')
+IMDB_DIALOG_BUILD_FILE = os.path.join(os.getcwd(), 'IMDBDialog.glade')
+
+# IMDB search parameters
+IMDB_URI = 'http://www.imdb.com/'
+IMDB_SEARCH_PREFIX = 'find?q='
+IMDB_SEARCH_POSTFIX = '&s=tt&ttype=ft&ref_=fn_ft'
 
 # xsl stylesheet for html transformation
 XSL_HTML_STYLE_DOC = os.path.join(os.getcwd(), 'xml', 'MovieList2html.xsl')
