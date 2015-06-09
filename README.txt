@@ -1,6 +1,6 @@
 
 =============
-MovieList 1.4
+MovieList 1.5
 =============
 
 A utility application to catalogue, sort, filter, and play media files on local 
@@ -8,16 +8,26 @@ disk. The catalogue can be imported using csv text, and it can be maintained by
 adding, editing, and deleting records.
 
 In addition to flat lists of media, support is provided to group the media into 
-'series' in an arbitrarily deep tree structure. 
+'series' in an arbitrarily deep tree structure. This is extremely useful when 
+the catalogue is used for TV episodes, or for 'franchise' movies (Poirot, Season 
+9, Episode 3; Star Wars Episode 4).
 
-The latest addition for v1.4 is the ability to print out a list of the media.
+In v1.4 is the ability to print out a list of the media was added. The method 
+chosen uses Webkit and the system's native printer support.
+
+*WIP* 
+The latest addition for v1.5 enables movie information to be retrieved from 
+IMDB. This should make it much quicker filling out things like the director and 
+the stars, whilst continuing to enable the information to be edited and updated 
+manually.
 
 Installation
 ============
 
-For Versions up to 1.4 the only supported platform is Linux. It *should* work 
+For Versions up to 1.5 the only supported platform is Linux. It *should* work 
 with Mac, but I do not have a Mac available for verifying the port. 
 
+[NB Check this for 2015]
 The port to Windows is not possible at present (July 2013) because the Python-gi 
 libraries are not available for that platform (it *may* be possible to back-port 
 to Python 2.7 and use PyGTK instead - I have not tried it and don't plan to 
@@ -38,7 +48,7 @@ Installation (Linux):
 
     1.  Unzip the tar.gz somewhere.
 
-    2.  In a console window navigate to the MovieList-1.4.x directory and run 
+    2.  In a console window navigate to the MovieList-1.5.x directory and run 
         the following command as root (on Ubuntu/Debian use sudo):
 
             ``[sudo] python3 setup.py install``

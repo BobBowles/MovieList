@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 """
 Module: MovieList.MovieEditDialog
 Created on: 28 Mar 2013
@@ -21,11 +22,13 @@ Created on: 28 Mar 2013
 
 from gi.repository import Gtk
 from constants import MOVIE_DIALOG_BUILD_FILE as DIALOG_BUILD_FILE
-from Movie import Movie, MovieSeries
+from Movie import Movie
 from MovieSeriesSelector import MovieSeriesSelector
+from IMDBDialog import IMDBDialog
 import datetime
 
 MIN_YEAR = 1900
+MAX_YEAR = datetime.datetime.now().year
 MIN_TIME = 0
 
 
@@ -42,6 +45,8 @@ class MovieEditDialog(object):
         """
         Construct and run the dialog
         """
+
+        self.context = context
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file(DIALOG_BUILD_FILE)
@@ -70,20 +75,27 @@ class MovieEditDialog(object):
         movieSeriesSelectorSocket.add(self.movieSeriesSelector)
 
         # adjust the date spinbutton range for the current year
-        now = datetime.datetime.now()
-        self.dateSpinbutton.set_range(MIN_YEAR, now.year)
+        self.dateSpinbutton.set_range(MIN_YEAR, MAX_YEAR)
+        self.dateSpinbutton.set_value(MAX_YEAR)
 
         # set the comboBox's current selection to the current parent series
         self.movieSeriesSelector.setSelected(parentSeriesIndex)
 
         # populate the dialog fields
+        self.populateMovieDialog(movie, mediaDirectory)
+
+
+    def populateMovieDialog(self, movie, mediaDirectory):
+        """
+        Populate the dialog fields with the data in the movie object.
+        The mediaDirectory may be null and is not usually needed anyway.
+        """
+        
         self.titleEntry.set_text(movie.title)
-        self.dateSpinbutton.set_value(int(movie.date) if movie.date
-                                      else MIN_YEAR)
+        self.dateSpinbutton.set_value(int(movie.date) if movie.date else MAX_YEAR)
         if movie.director:
             self.directorEntry.set_text(movie.director)
-        self.durationSpinbutton.set_value(int(movie.duration) if movie.duration
-                                          else MIN_TIME)
+        self.durationSpinbutton.set_value(int(movie.duration) if movie.duration else MIN_TIME)
         if movie.stars:
             self.starsEntry.set_text(movie.stars)
         if movie.genre:
@@ -92,6 +104,7 @@ class MovieEditDialog(object):
             self.mediaChooserButton.set_filename(movie.media)
         elif mediaDirectory:
             self.mediaChooserButton.set_current_folder(mediaDirectory)
+
 
 
     def run(self):
@@ -129,6 +142,21 @@ class MovieEditDialog(object):
 
         self.dialog.destroy()
         return response, movie, parentSeriesIter
+
+
+    def on_imdbFindButton_clicked(self, widget):
+        """
+        Perform a search on IMDB for the movie information.
+        """
+
+        dialog = IMDBDialog(
+                            context=self.context,
+                            searchTerm=self.titleEntry.get_text(),
+                            parent=self.dialog)
+
+        response, imdbMovie = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            self.populateMovieDialog(imdbMovie, '')
 
 
 
