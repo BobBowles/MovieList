@@ -95,6 +95,30 @@
       <media></media>
     </movie>
     <movie>
+      <title>The Hobbit: The Battle of the Five Armies</title>
+      <date>2014</date>
+      <director>Peter Jackson</director>
+      <duration>144</duration>
+      <star>Ian McKellen</star>
+      <star>Martin Freeman</star>
+      <star>Richard Armitage</star>
+      <genre>Adventure</genre>
+      <genre>Fantasy</genre>
+      <media>/home/bob/Videos/Adele - Skyfall (Lyric Video).mp4</media>
+    </movie>
+    <movie>
+      <title>The Hobbit: The Desolation of Smaug</title>
+      <date>2013</date>
+      <director>Peter Jackson</director>
+      <duration>161</duration>
+      <star>Ian McKellen</star>
+      <star>Martin Freeman</star>
+      <star>Richard Armitage</star>
+      <genre>Adventure</genre>
+      <genre>Fantasy</genre>
+      <media>/home/bob/Videos/Avril Lavigne - Complicated_      - YouTube.flv</media>
+    </movie>
+    <movie>
       <title>The Hobbit: The Swedolation of Smaug</title>
       <date>2014</date>
       <director>Carole Winchester</director>

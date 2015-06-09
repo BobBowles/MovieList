@@ -38,8 +38,6 @@ class IMDBDialog(object):
         Load the UI elements from the .glade file. Add any extra stuff for the
         dialog to function.
         """
-
-        print('hello IMDB dialog search for {}'.format(searchTerm))
         
         # handle null search term by just pointing at IMDB home page
         self.searchTerm = searchTerm
@@ -66,6 +64,8 @@ class IMDBDialog(object):
 
         # get references to the buttons we want to control the behaviour of
         self.refreshButton = self.builder.get_object('refreshButton')
+        self.backButton = self.builder.get_object('backButton')
+        self.forwardButton = self.builder.get_object('forwardButton')
         self.okButton = self.builder.get_object('okButton')
 
         # make a web browser, add it to the dialog and give it a callback
@@ -194,13 +194,32 @@ class IMDBDialog(object):
             self.refreshButton.set_sensitive(False)
             self.okButton.set_sensitive(False)
 
-        # TODO: elsewhere on IMDB enable both Refresh and OK
+        # elsewhere on IMDB enable both Refresh and OK
         elif request.get_uri().startswith(IMDB_URI):
             self.refreshButton.set_sensitive(True)
 
             # make OK button pressable if this is the right kind of page
             self.okButton.set_sensitive(self.isMovieUri(request.get_uri()))
 
+        # check the status of the navigation buttons makes sense
+        self.backButton.set_sensitive(self.webViewer.can_go_back())
+        self.forwardButton.set_sensitive(self.webViewer.can_go_forward())
+
+
+    def on_backButton_clicked(self, widget):
+        """
+        Navigate the webViewer back.
+        """
+
+        self.webViewer.go_back()
+
+
+    def on_forwardButton_clicked(self, widget):
+        """
+        Navigate the webViewer forward.
+        """
+
+        self.webViewer.go_forward()
 
 
     def run(self):
