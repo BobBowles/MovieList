@@ -59,6 +59,7 @@ for file in os.listdir(os.path.join(packageRoot, xmlRoot)):
 fileList.append('MovieList.glade')
 fileList.append('MovieEditDialog.glade')
 fileList.append('MovieSeriesEditDialog.glade')
+fileList.append('IMDBDialog.glade')
 fileList.sort()
 
 packageData = {'MovieList': fileList}
