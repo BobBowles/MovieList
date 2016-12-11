@@ -24,6 +24,7 @@ from lxml import etree
 from constants import IMDB_DIALOG_BUILD_FILE as DIALOG_BUILD_FILE
 from constants import IMDB_URI, IMDB_SEARCH_PREFIX, IMDB_SEARCH_POSTFIX
 from Movie import Movie
+import string
 
 
 
@@ -70,8 +71,10 @@ class IMDBDialog(object):
 
         # make a web browser, add it to the dialog and give it a callback
         self.webViewer = WebKit.WebView()
-        self.webViewer.connect('navigation-requested',
-                               self.on_navigation_requested)
+#         self.webViewer.connect('navigation-requested',
+#                                self.on_navigation_requested)
+        self.webViewer.connect('document-load-finished',
+                               self.on_document_load_finished)
         scrolledWindow = self.builder.get_object('scrolledWindow')
         scrolledWindow.add(self.webViewer)
 
@@ -96,10 +99,10 @@ class IMDBDialog(object):
         imdbTree = etree.parse(uri, self.htmlParser)
         root = imdbTree.getroot()
         self.movieData = None
-        for td in root.iterdescendants('td'):
-            if (td.attrib.has_key('id') and
-                td.attrib['id'] == 'overview-top'):
-                self.movieData = td
+        for element in root.iterdescendants('div'):
+            if (element.attrib.has_key('class') and
+                element.attrib['class'] == 'title-overview'):
+                self.movieData = element
                 break
         return self.movieData is not None
 
@@ -111,18 +114,16 @@ class IMDBDialog(object):
         """
 
         # movie title and date
+        print('Extracting movie data ...')
         title = ''
         date = ''
         for h1 in self.movieData.iterdescendants('h1'):
-            if (h1.attrib.has_key('class') and
-                h1.attrib['class'] == 'header'):
+            if (h1.attrib.has_key('itemprop') and
+                h1.attrib['itemprop'] == 'name'):
+                title = h1.text
                 for span in h1.iter('span'):
-                    if (span.attrib.has_key('class') and
-                        span.attrib['class'] == 'itemprop' and
-                        span.attrib['itemprop'] == 'name'):
-                        title = span.text
-                    if (span.attrib.has_key('class') and
-                        span.attrib['class'] == 'nobr'):
+                    if (span.attrib.has_key('id') and
+                        span.attrib['id'] == 'titleYear'):
                             for a in span.iter('a'):
                                 date = a.text
 
@@ -131,7 +132,7 @@ class IMDBDialog(object):
         for time in self.movieData.iterdescendants('time'):
             if (time.attrib.has_key('itemprop') and
                 time.attrib['itemprop'] == 'duration'):
-                duration = time.text.split()[0]
+                duration = time.attrib['datetime'].strip(string.ascii_letters)
 
         # genre
         genre = ''
@@ -164,10 +165,10 @@ class IMDBDialog(object):
         """
 
         people = []
-        for div in self.movieData.iterdescendants('div'):
-            if (div.attrib.has_key('itemprop') and
-                div.attrib['itemprop'] == role):
-                for span in div.iterdescendants('span'):
+        for rolespan in self.movieData.iterdescendants('span'):
+            if (rolespan.attrib.has_key('itemprop') and
+                rolespan.attrib['itemprop'] == role):
+                for span in rolespan.iterdescendants('span'):
                     if (span.attrib.has_key('itemprop') and
                         span.attrib['itemprop'] == 'name'):
                         people.append(span.text.strip())
@@ -184,26 +185,62 @@ class IMDBDialog(object):
         self.refreshView()
 
 
-    def on_navigation_requested(self, view, frame, request, data=None):
+    def on_document_load_finished(self, view, frame, data=None):
         """
-        Navigation change, so re-evaluate the buttons status.
+        Page has reloaded, so re-evaluate the buttons status.
         """
 
         # at the start disable both refresh and OK
-        if request.get_uri() == self.uri:
+        print('Checking button status...')
+        print('URI is: ', view.get_uri())
+        if view.get_uri() == self.uri:
             self.refreshButton.set_sensitive(False)
             self.okButton.set_sensitive(False)
+            print('OK not sensitive')
 
         # elsewhere on IMDB enable both Refresh and OK
-        elif request.get_uri().startswith(IMDB_URI):
+        elif view.get_uri().startswith(IMDB_URI):
             self.refreshButton.set_sensitive(True)
 
             # make OK button pressable if this is the right kind of page
-            self.okButton.set_sensitive(self.isMovieUri(request.get_uri()))
+            print('Setting OK status...')
+            print('Movie is ', self.isMovieUri(view.get_uri()))
+            self.okButton.set_sensitive(self.isMovieUri(view.get_uri()))
+            print('OK sensitive is: ', self.okButton.get_sensitive())
 
         # check the status of the navigation buttons makes sense
         self.backButton.set_sensitive(self.webViewer.can_go_back())
         self.forwardButton.set_sensitive(self.webViewer.can_go_forward())
+#
+#
+#     def on_navigation_requested(self, view, frame, request, data=None):
+#         """
+#         THIS IS BROKEN
+#         Navigation change, so re-evaluate the buttons status.
+#         """
+#
+#         # at the start disable both refresh and OK
+#         return
+#         print('Checking button status...')
+#         print('URI is: ', request.get_uri())
+#         if request.get_uri() == self.uri:
+#             self.refreshButton.set_sensitive(False)
+#             self.okButton.set_sensitive(False)
+#             print('OK not sensitive')
+#
+#         # elsewhere on IMDB enable both Refresh and OK
+#         elif request.get_uri().startswith(IMDB_URI):
+#             self.refreshButton.set_sensitive(True)
+#
+#             # make OK button pressable if this is the right kind of page
+#             print('Setting OK status...')
+#             print('Movie is ', self.isMovieUri(request.get_uri()))
+#             self.okButton.set_sensitive(self.isMovieUri(request.get_uri()))
+#             print('OK sensitive is: ', self.okButton.get_sensitive())
+#
+#         # check the status of the navigation buttons makes sense
+#         self.backButton.set_sensitive(self.webViewer.can_go_back())
+#         self.forwardButton.set_sensitive(self.webViewer.can_go_forward())
 
 
     def on_backButton_clicked(self, widget):

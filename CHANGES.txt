@@ -19,9 +19,11 @@ v1.4    2013-08-09  Add file print. This adds dependency on cairo and WebKit.
                     media playback. 
 v1.4.1  2013-10-13  Encapsulate references to version in accordance with PEP 8.
 v1.4.2  2015-05-23  Fix desktop launcher for Linux. Minor code tidy.
-v1.5    2015-06-xx  Workaround for Issue13948.
+v1.5    2015-06-08  Workaround for Issue13948.
                     Add IMDB data gathering function to movie edit.
                     Make date selection start at the current year.
+v1.5.1  2016-12-11  Fix IMDB data gathering due to changes in IMDB html. 
+                  
 
                     
                                          
